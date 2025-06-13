@@ -1,16 +1,30 @@
 ---
+# 1. Front Matter：告诉Jekyll“我是谁，我要用哪个模板”
 layout: default
-title: 首页
+title: 欢迎来到珩妈的乐园
 ---
 
-<div class="game-selection">
-    <!-- 链接现在可以正确地指向我们新整理的文件夹了 -->
-    <a href="{{ '/games/game1/' | relative_url }}" class="game-card">
-        <h2 class="game-title">🔢 数字王国大探险</h2>
-        <p>...</p>
-    </a>
-    <a href="{{ '/games/game2/' | relative_url }}" class="game-card">
-        <h2 class="game-title">🧠 数字记忆挑战</h2>
-        <p>...</p>
-    </a>
+<!-- 2. Body Content：只写这个页面独有的内容 -->
+<div class="container">
+    <div class="header">
+        <h1 class="title"><span class="emoji">🚀</span> 珩妈的数学启蒙乐园</h1>
+        <p class="subtitle">在游戏中探索数学的奇妙世界！</p>
+    </div>
+
+    <div class="game-selection">
+        <!-- 3. Jekyll Links：使用正确的链接语法 -->
+        <a href="{{ '/games/game1/' | relative_url }}" class="game-card">
+            <h2 class="game-title">🔢 数字王国大探险</h2>
+            <p class="game-description">认识0-10数字，学习数量对应，开启你的第一场数学冒险！</p>
+        </a>
+
+        <a href="{{ '/games/game2/' | relative_url }}" class="game-card">
+            <h2 class="game-title">🧠 数字记忆挑战</h2>
+            <p class="game-description">考验你的眼力和记忆力！包含翻牌、拼图和找规律三大挑战。</p>
+        </a>
+    </div>
+    
+    <div class="footer">
+        <p>© 2024 珩妈和她的首席开发官出品</p>
+    </div>
 </div>
