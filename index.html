@@ -1,53 +1,16 @@
 ---
-# 这是Jekyll的Front Matter，必须放在文件最顶部
-# 它告诉Jekyll，这个页面要使用_layouts文件夹里的default.html作为模板
-layout: default 
+layout: default
 title: 首页
-# 你可以为每个页面定义不同的标题，它会显示在浏览器标签页上
 ---
 
-<!-- 
-    注意：上面那几行'---'是必须的！
-    下面的代码，是你这个页面独有的核心内容。
-    所有<head>, <body>, <footer>等重复的部分，都已经被模板接管了，这里不需要再写！
--->
-
-<div class="header">
-    <h1 class="title"><span class="emoji">🚀</span> 珩妈的数学启蒙乐园</h1>
-    <p class="subtitle">在游戏中探索数学的奇妙世界！</p>
-</div>
-
 <div class="game-selection">
-    <!-- 游戏一的链接卡片 -->
-    <!-- 关键修改在这里！使用了Jekyll的链接语法 -->
+    <!-- 链接现在可以正确地指向我们新整理的文件夹了 -->
     <a href="{{ '/games/game1/' | relative_url }}" class="game-card">
         <h2 class="game-title">🔢 数字王国大探险</h2>
-        <p class="game-description">认识0-10数字，学习数量对应，开启你的第一场数学冒险！</p>
+        <p>...</p>
     </a>
-
-    <!-- 游戏二的链接卡片 -->
-    <!-- 关键修改在这里！-->
     <a href="{{ '/games/game2/' | relative_url }}" class="game-card">
         <h2 class="game-title">🧠 数字记忆挑战</h2>
-        <p class="game-description">考验你的眼力和记忆力！包含翻牌、拼图和找规律三大挑战。</p>
+        <p>...</p>
     </a>
-
-    <!-- 如果未来有更多游戏，可以在这里继续添加 -->
-    <div class="game-card" style="opacity: 0.6; cursor: not-allowed;">
-        <h2 class="game-title">➕ 更多游戏敬请期待...</h2>
-        <p class="game-description">我们正在努力开发中，每周都有新惊喜！</p>
-    </div>
 </div>
-
-<div class="footer">
-    <p>© 2024 珩妈和她的首席开发官出品</p>
-</div>
-
-
-<!-- 
-    注意：您原来代码里的<style>部分怎么办？
-    建议将<style>里的所有CSS代码，移动到一个新的CSS文件里，
-    比如在根目录创建一个 /assets/css/main.css 文件，
-    然后在_layouts/default.html的<head>里用<link>标签引入它。
-    这样更规范，也能被所有页面共用。
--->
