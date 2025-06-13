@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>珩妈的数学启蒙乐园</title>
+    <style>
+        /* --- 全局样式 --- */
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        /* --- 容器样式 --- */
+        .container {
+            text-align: center;
+            padding: 40px 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            max-width: 600px;
+            width: 90%;
+        }
+
+        /* --- 标题和欢迎语样式 --- */
+        .header {
+            margin-bottom: 40px;
+        }
+
+        .title {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #ff6b6b;
+            margin-bottom: 10px;
+        }
+        
+        .title .emoji {
+            font-size: 1.2em;
+            vertical-align: middle;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: #555;
+        }
+
+        /* --- 游戏选择区域样式 --- */
+        .game-selection {
+            display: flex;
+            flex-direction: column;
+            gap: 20px; /* 游戏卡片之间的间距 */
+        }
+
+        .game-card {
+            display: block; /* 让整个卡片都可以点击 */
+            padding: 20px;
+            background: linear-gradient(145deg, #ffffff, #e6e6e6);
+            border-radius: 15px;
+            text-decoration: none; /* 去掉链接下划线 */
+            color: inherit; /* 继承父元素颜色 */
+            box-shadow: 5px 5px 15px #c4c4c4, -5px -5px 15px #ffffff;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 8px 8px 20px #b8b8b8, -8px -8px 20px #ffffff;
+        }
+
+        .game-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #4a4a4a;
+        }
+
+        .game-description {
+            font-size: 1em;
+            color: #7a7a7a;
+        }
+        
+        /* --- 页脚样式 --- */
+        .footer {
+            margin-top: 40px;
+            font-size: 0.9em;
+            color: #aaa;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1 class="title"><span class="emoji">🚀</span> 珩妈的数学启蒙乐园</h1>
+            <p class="subtitle">在游戏中探索数学的奇妙世界！</p>
+        </div>
+
+        <div class="game-selection">
+            <!-- 游戏一的链接卡片 -->
+            <a href="game1.html" class="game-card">
+                <h2 class="game-title">🔢 数字王国大探险</h2>
+                <p class="game-description">认识0-10数字，学习数量对应，开启你的第一场数学冒险！</p>
+            </a>
+
+            <!-- 游戏二的链接卡片 -->
+            <a href="game2.html" class="game-card">
+                <h2 class="game-title">🧠 数字记忆挑战</h2>
+                <p class="game-description">考验你的眼力和记忆力！包含翻牌、拼图和找规律三大挑战。</p>
+            </a>
+
+            <!-- 如果未来有更多游戏，可以在这里继续添加 -->
+            <!--
+            <a href="game3.html" class="game-card">
+                <h2 class="game-title">➕ 更多游戏敬请期待...</h2>
+                <p class="game-description">我们正在努力开发中，每周都有新惊喜！</p>
+            </a>
+            -->
+        </div>
+        
+        <div class="footer">
+            <p>© 2024 珩妈和她的首席开发官出品</p>
+        </div>
+    </div>
+
+</body>
+</html>
