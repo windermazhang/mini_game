@@ -587,24 +587,211 @@
             }
         }
 
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            .main-title { font-size: 2em; }
-            .factory-area { margin: 10px; padding: 20px; }
-            .candy-production { flex-direction: column; }
-            .wizard-character { font-size: 3em; }
-            .answer-option { width: 70px; height: 70px; font-size: 1.8em; }
+        /* 横屏提示样式 */
+        .orientation-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            cursor: pointer;
         }
 
+        .orientation-content {
+            max-width: 300px;
+        }
+
+        .orientation-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            animation: rotatePhone 2s infinite ease-in-out;
+        }
+
+        .orientation-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .orientation-message {
+            font-size: 1em;
+            line-height: 1.4;
+            opacity: 0.9;
+        }
+
+        @keyframes rotatePhone {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(90deg); }
+        }
+
+        /* 移动端竖屏样式 */
+        @media (max-width: 768px) and (orientation: portrait) {
+            .main-title { font-size: 1.5em; margin: 10px 0; }
+            .factory-area { margin: 5px; padding: 15px; }
+            .candy-production { 
+                flex-direction: column; 
+                gap: 10px;
+                font-size: 0.9em;
+            }
+            .wizard-character { font-size: 2.5em; }
+            .wizard-speech { 
+                font-size: 0.8em; 
+                max-width: 250px; 
+                padding: 8px 12px;
+            }
+            .answer-option { 
+                width: 60px; 
+                height: 60px; 
+                font-size: 1.5em; 
+                margin: 5px;
+            }
+            .answer-options { 
+                gap: 8px; 
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .score-board { 
+                font-size: 0.85em; 
+                padding: 8px;
+            }
+            .control-button {
+                padding: 8px 16px;
+                font-size: 0.9em;
+            }
+        }
+
+        /* 移动端横屏优化样式 */
+        @media (max-width: 768px) and (orientation: landscape) {
+            body { 
+                padding: 5px 0;
+            }
+            .main-title { 
+                font-size: 1.8em; 
+                margin: 5px 0;
+            }
+            .subtitle {
+                font-size: 0.9em;
+                margin: 5px 0 15px 0;
+            }
+            .factory-area { 
+                margin: 5px 10px; 
+                padding: 15px; 
+            }
+            .candy-production { 
+                flex-direction: row; 
+                gap: 15px;
+                justify-content: center;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+            .candy-group {
+                margin: 0 5px;
+            }
+            .wizard-area {
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                z-index: 100;
+            }
+            .wizard-character { 
+                font-size: 2.5em; 
+                margin-bottom: 5px;
+            }
+            .wizard-speech { 
+                font-size: 0.8em; 
+                max-width: 200px; 
+                right: 0;
+                position: absolute;
+                top: 100%;
+            }
+            .answer-option { 
+                width: 70px; 
+                height: 70px; 
+                font-size: 1.6em; 
+            }
+            .answer-options { 
+                gap: 10px; 
+                margin-top: 15px;
+            }
+            .score-board { 
+                font-size: 0.9em; 
+                padding: 8px;
+                position: fixed;
+                top: 10px;
+                left: 10px;
+                background: rgba(255,255,255,0.95);
+                border-radius: 10px;
+                backdrop-filter: blur(10px);
+                z-index: 100;
+            }
+            .game-controls {
+                position: fixed;
+                bottom: 10px;
+                left: 10px;
+                right: 10px;
+                z-index: 100;
+            }
+            .level-complete-card {
+                max-width: 90%;
+                margin: 10px auto;
+            }
+        }
+
+        /* 小屏幕设备 */
         @media (max-width: 480px) {
-            .main-title { font-size: 1.8em; }
-            .candy-production { gap: 15px; }
-            .answer-options { gap: 10px; }
-            .wizard-speech { font-size: 0.9em; max-width: 280px; }
+            .orientation-content {
+                max-width: 250px;
+            }
+            .orientation-icon {
+                font-size: 3em;
+            }
+            .orientation-title {
+                font-size: 1.3em;
+            }
+            .orientation-message {
+                font-size: 0.9em;
+            }
+        }
+
+        /* 平板横屏优化 */
+        @media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+            .factory-area {
+                max-width: 90%;
+                margin: 20px auto;
+            }
+            .candy-production {
+                gap: 20px;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- 横屏提示遮罩 -->
+    <div class="orientation-overlay" id="orientationOverlay">
+        <div class="orientation-content">
+            <div class="orientation-icon">📱</div>
+            <div class="orientation-title">获得更佳游戏体验</div>
+            <div class="orientation-message">
+                请将您的设备横屏放置<br/>
+                横屏模式下游戏界面更舒适哦！<br/>
+                <small style="opacity: 0.7; margin-top: 10px; display: block;">
+                    或点击此处继续竖屏游戏
+                </small>
+            </div>
+        </div>
+    </div>
+
     <!-- 工厂背景 -->
     <div class="factory-background">
         <div class="factory-smoke smoke1"></div>
@@ -762,6 +949,7 @@
                 this.createMagicParticles();
                 this.updateDisplay();
                 this.checkImagesAvailability();
+                this.initOrientationCheck();
             }
             
             checkImagesAvailability() {
@@ -776,6 +964,66 @@
                     console.log('使用emoji作为魔法师角色 - 图片未找到');
                 };
                 img.src = this.wizardImages.happy;
+            }
+            
+            // 横屏检测和提示
+            initOrientationCheck() {
+                this.orientationOverlay = document.getElementById('orientationOverlay');
+                this.orientationDismissed = localStorage.getItem('orientationDismissed') === 'true';
+                
+                // 绑定点击事件允许用户关闭提示
+                this.orientationOverlay.addEventListener('click', () => {
+                    this.dismissOrientationOverlay();
+                });
+                
+                // 检查当前方向
+                this.checkOrientation();
+                
+                // 监听方向变化
+                window.addEventListener('orientationchange', () => {
+                    setTimeout(() => this.checkOrientation(), 500); // 延迟检查，等待方向变化完成
+                });
+                
+                // 监听窗口大小变化（用于浏览器窗口调整）
+                window.addEventListener('resize', () => {
+                    this.checkOrientation();
+                });
+            }
+            
+            checkOrientation() {
+                const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                const isSmallScreen = window.innerWidth <= 768;
+                const isPortrait = window.innerHeight > window.innerWidth;
+                
+                // 只在移动端小屏幕竖屏时显示提示
+                if (isMobile && isSmallScreen && isPortrait && !this.orientationDismissed) {
+                    this.showOrientationOverlay();
+                } else {
+                    this.hideOrientationOverlay();
+                }
+            }
+            
+            showOrientationOverlay() {
+                if (this.orientationOverlay) {
+                    this.orientationOverlay.style.display = 'flex';
+                    // 添加淡入动画
+                    setTimeout(() => {
+                        this.orientationOverlay.style.opacity = '1';
+                    }, 10);
+                }
+            }
+            
+            hideOrientationOverlay() {
+                if (this.orientationOverlay) {
+                    this.orientationOverlay.style.display = 'none';
+                    this.orientationOverlay.style.opacity = '0';
+                }
+            }
+            
+            dismissOrientationOverlay() {
+                this.orientationDismissed = true;
+                localStorage.setItem('orientationDismissed', 'true');
+                this.hideOrientationOverlay();
             }
             
             updateWizardAppearance(mood = 'happy') {
