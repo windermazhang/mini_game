@@ -2,7 +2,11 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="screen-orientation" content="auto">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>魔法糖果工厂 - 加法启蒙游戏</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -774,6 +778,99 @@
                 gap: 20px;
             }
         }
+
+        /* 强制移动端横屏样式 - 通过JavaScript添加的class */
+        body.mobile-landscape {
+            padding: 5px 0 !important;
+        }
+
+        body.mobile-landscape .main-title { 
+            font-size: 1.8em !important; 
+            margin: 5px 0 !important;
+        }
+
+        body.mobile-landscape .subtitle {
+            font-size: 0.9em !important;
+            margin: 5px 0 15px 0 !important;
+        }
+
+        body.mobile-landscape .factory-area { 
+            margin: 5px 10px !important; 
+            padding: 15px !important; 
+        }
+
+        body.mobile-landscape .candy-production { 
+            flex-direction: row !important; 
+            gap: 15px !important;
+            justify-content: center !important;
+            align-items: center !important;
+            flex-wrap: wrap !important;
+        }
+
+        body.mobile-landscape .candy-group {
+            margin: 0 5px !important;
+        }
+
+        body.mobile-landscape .wizard-area {
+            position: fixed !important;
+            top: 10px !important;
+            right: 10px !important;
+            z-index: 100 !important;
+        }
+
+        body.mobile-landscape .wizard-character { 
+            font-size: 2.5em !important; 
+            margin-bottom: 5px !important;
+        }
+
+        body.mobile-landscape .wizard-speech { 
+            font-size: 0.8em !important; 
+            max-width: 200px !important; 
+            right: 0 !important;
+            position: absolute !important;
+            top: 100% !important;
+        }
+
+        body.mobile-landscape .answer-option { 
+            width: 70px !important; 
+            height: 70px !important; 
+            font-size: 1.6em !important; 
+        }
+
+        body.mobile-landscape .answer-options { 
+            gap: 10px !important; 
+            margin-top: 15px !important;
+        }
+
+        body.mobile-landscape .score-board { 
+            font-size: 0.9em !important; 
+            padding: 8px !important;
+            position: fixed !important;
+            top: 10px !important;
+            left: 10px !important;
+            background: rgba(255,255,255,0.95) !important;
+            border-radius: 10px !important;
+            backdrop-filter: blur(10px) !important;
+            z-index: 100 !important;
+        }
+
+        body.mobile-landscape .game-controls {
+            position: fixed !important;
+            bottom: 10px !important;
+            left: 10px !important;
+            right: 10px !important;
+            z-index: 100 !important;
+        }
+
+        body.mobile-landscape .level-complete-card {
+            max-width: 90% !important;
+            margin: 10px auto !important;
+        }
+
+        /* 强制移动端竖屏样式 */
+        body.mobile-portrait .orientation-overlay {
+            display: flex !important;
+        }
     </style>
 </head>
 <body>
@@ -950,6 +1047,7 @@
                 this.updateDisplay();
                 this.checkImagesAvailability();
                 this.initOrientationCheck();
+                this.createDebugInfo();
             }
             
             checkImagesAvailability() {
@@ -992,8 +1090,25 @@
             
             checkOrientation() {
                 const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                const isSmallScreen = window.innerWidth <= 768;
+                const isSmallScreen = Math.min(window.innerWidth, window.innerHeight) <= 768;
                 const isPortrait = window.innerHeight > window.innerWidth;
+                
+                // 获取屏幕方向信息
+                let screenOrientation = 'unknown';
+                if (screen.orientation) {
+                    screenOrientation = screen.orientation.type;
+                } else if (window.orientation !== undefined) {
+                    screenOrientation = Math.abs(window.orientation) === 90 ? 'landscape' : 'portrait';
+                }
+                
+                console.log('方向检测:', {
+                    isMobile,
+                    isSmallScreen,
+                    isPortrait,
+                    screenOrientation,
+                    windowSize: `${window.innerWidth}x${window.innerHeight}`,
+                    dismissed: this.orientationDismissed
+                });
                 
                 // 只在移动端小屏幕竖屏时显示提示
                 if (isMobile && isSmallScreen && isPortrait && !this.orientationDismissed) {
@@ -1001,6 +1116,17 @@
                 } else {
                     this.hideOrientationOverlay();
                 }
+                
+                // 添加横屏优化的body class
+                document.body.classList.toggle('mobile-landscape', 
+                    isMobile && isSmallScreen && !isPortrait
+                );
+                document.body.classList.toggle('mobile-portrait', 
+                    isMobile && isSmallScreen && isPortrait
+                );
+                
+                // 更新调试信息
+                this.updateDebugInfo();
             }
             
             showOrientationOverlay() {
@@ -1010,6 +1136,57 @@
                     setTimeout(() => {
                         this.orientationOverlay.style.opacity = '1';
                     }, 10);
+                }
+            }
+            
+            // 调试工具：显示当前设备和方向信息
+            createDebugInfo() {
+                if (localStorage.getItem('debugMode') === 'true') {
+                    const debugDiv = document.createElement('div');
+                    debugDiv.id = 'debugInfo';
+                    debugDiv.style.cssText = `
+                        position: fixed;
+                        top: 50%;
+                        left: 10px;
+                        transform: translateY(-50%);
+                        background: rgba(0,0,0,0.8);
+                        color: white;
+                        padding: 10px;
+                        border-radius: 5px;
+                        font-size: 12px;
+                        z-index: 9999;
+                        max-width: 200px;
+                        line-height: 1.4;
+                    `;
+                    document.body.appendChild(debugDiv);
+                    this.updateDebugInfo();
+                }
+            }
+            
+            updateDebugInfo() {
+                const debugDiv = document.getElementById('debugInfo');
+                if (debugDiv) {
+                    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                    const isSmallScreen = Math.min(window.innerWidth, window.innerHeight) <= 768;
+                    const isPortrait = window.innerHeight > window.innerWidth;
+                    
+                    let orientation = 'unknown';
+                    if (screen.orientation) {
+                        orientation = screen.orientation.type;
+                    } else if (window.orientation !== undefined) {
+                        orientation = `${window.orientation}°`;
+                    }
+                    
+                    debugDiv.innerHTML = `
+                        <strong>调试信息:</strong><br/>
+                        设备: ${isMobile ? '移动端' : '桌面端'}<br/>
+                        屏幕: ${window.innerWidth}x${window.innerHeight}<br/>
+                        小屏: ${isSmallScreen ? '是' : '否'}<br/>
+                        竖屏: ${isPortrait ? '是' : '否'}<br/>
+                        方向: ${orientation}<br/>
+                        UA: ${navigator.userAgent.substring(0, 30)}...<br/>
+                        Body类: ${document.body.className || '无'}
+                    `;
                 }
             }
             
