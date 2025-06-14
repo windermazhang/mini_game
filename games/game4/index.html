@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>魔法糖果工厂 - 加法启蒙游戏</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        /* 工厂背景动画 */
+        .factory-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+            opacity: 0.3;
+        }
+
+        .factory-smoke {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.3) 70%, transparent 100%);
+            border-radius: 50%;
+            animation: smoke 4s infinite ease-in-out;
+        }
+
+        .smoke1 { top: 20%; left: 10%; animation-delay: 0s; }
+        .smoke2 { top: 15%; left: 80%; animation-delay: 1s; }
+        .smoke3 { top: 25%; left: 60%; animation-delay: 2s; }
+
+        @keyframes smoke {
+            0%, 100% { transform: translateY(0) scale(0.8); opacity: 0.8; }
+            50% { transform: translateY(-20px) scale(1.2); opacity: 0.4; }
+        }
+
+        .title {
+            text-align: center;
+            margin: 20px 0;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .main-title {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d, #6bcf7f, #4d9de0);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbow 3s ease-in-out infinite;
+        }
+
+        @keyframes rainbow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: #fff;
+            opacity: 0.9;
+        }
+
+        /* 游戏控制区 */
+        .game-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .control-button {
+            padding: 12px 25px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .start-btn {
+            background: linear-gradient(145deg, #ff6b6b, #ff8e8e);
+        }
+
+        .start-btn:hover {
+            background: linear-gradient(145deg, #ff5252, #ff7979);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .next-btn {
+            background: linear-gradient(145deg, #4ecdc4, #26d0ce);
+            display: none;
+        }
+
+        .next-btn:hover {
+            background: linear-gradient(145deg, #2dd4cf, #1abc9c);
+            transform: translateY(-2px);
+        }
+
+        .reset-btn {
+            background: linear-gradient(145deg, #a55eea, #8854d0);
+        }
+
+        .reset-btn:hover {
+            background: linear-gradient(145deg, #9c4deb, #7b68ee);
+            transform: translateY(-2px);
+        }
+
+        /* 分数和进度显示 */
+        .score-board {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 15px 25px;
+            margin: 10px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .score {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        /* 魔法师角色区域 */
+        .wizard-area {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .wizard-character {
+            width: 120px;
+            height: 120px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+            position: relative;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            background: linear-gradient(145deg, #fff, #f0f0f0);
+        }
+        
+        .wizard-character img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        
+        .wizard-character.emoji {
+            font-size: 4em;
+            width: auto;
+            height: auto;
+            background: none;
+            box-shadow: none;
+            border-radius: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .wizard-character:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .wizard-speech {
+            background: linear-gradient(145deg, #fff, #f8f9fa);
+            border: 3px solid #ff6b6b;
+            border-radius: 20px;
+            padding: 12px 20px;
+            margin: 15px auto;
+            max-width: 350px;
+            font-size: 1em;
+            color: #2c3e50;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .wizard-speech::before {
+            content: '';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-bottom: 12px solid #ff6b6b;
+        }
+
+        /* 糖果工厂主体区域 */
+        .factory-area {
+            background: rgba(255,255,255,0.95);
+            border-radius: 25px;
+            padding: 30px;
+            margin: 20px;
+            max-width: 800px;
+            width: 90%;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .level-title {
+            text-align: center;
+            font-size: 1.8em;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        /* 糖果制作区 */
+        .candy-production {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .candy-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background: linear-gradient(145deg, #fff, #f8f9fa);
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .candy-group:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+        }
+
+        .candy-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin: 15px 0;
+            min-height: 80px;
+            max-width: 100px;
+        }
+
+        .candy {
+            font-size: 2em;
+            animation: candyPop 0.6s ease-out forwards;
+            opacity: 0;
+            transform: scale(0);
+        }
+
+        @keyframes candyPop {
+            0% { opacity: 0; transform: scale(0) rotate(0deg); }
+            50% { opacity: 1; transform: scale(1.2) rotate(180deg); }
+            100% { opacity: 1; transform: scale(1) rotate(360deg); }
+        }
+
+        .candy-count {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #e74c3c;
+            background: linear-gradient(145deg, #ffeaa7, #fdcb6e);
+            padding: 8px 15px;
+            border-radius: 15px;
+            margin-top: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* 运算符号 */
+        .operator {
+            font-size: 3em;
+            font-weight: bold;
+            color: #ff6b6b;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .equals {
+            font-size: 2.5em;
+            color: #27ae60;
+        }
+
+        /* 答案选择区 */
+        .answer-options {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+
+        /* 关卡完成卡片 */
+        .level-complete-card {
+            background: linear-gradient(145deg, #fff, #f8f9fa);
+            border-radius: 25px;
+            padding: 30px;
+            margin: 20px 0;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+            border: 3px solid #26de81;
+            display: none;
+            animation: slideIn 0.5s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .level-complete-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(38, 222, 129, 0.1), transparent);
+            animation: shine 2s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        @keyframes slideIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .level-complete-title {
+            font-size: 1.8em;
+            color: #26de81;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .level-complete-message {
+            font-size: 1.2em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .next-level-btn {
+            padding: 15px 30px;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(145deg, #26de81, #20bf6b);
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(38, 222, 129, 0.3);
+            margin: 10px;
+        }
+
+        .next-level-btn:hover {
+            background: linear-gradient(145deg, #20bf6b, #26de81);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(38, 222, 129, 0.4);
+        }
+
+        .complete-stats {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            background: rgba(38, 222, 129, 0.1);
+            border-radius: 15px;
+            min-width: 80px;
+        }
+
+        .stat-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #26de81;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .answer-option {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 4px solid #fff;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .answer-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .answer-option:hover::before {
+            left: 100%;
+        }
+
+        .option-1 { background: linear-gradient(145deg, #ff7675, #fd79a8); }
+        .option-2 { background: linear-gradient(145deg, #74b9ff, #0984e3); }
+        .option-3 { background: linear-gradient(145deg, #55a3ff, #3742fa); }
+        .option-4 { background: linear-gradient(145deg, #26de81, #20bf6b); }
+
+        .answer-option:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+        }
+
+        .answer-option.correct {
+            animation: correctAnswer 0.8s ease-in-out;
+        }
+
+        @keyframes correctAnswer {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .answer-option.wrong {
+            animation: wrongAnswer 0.5s ease-in-out;
+        }
+
+        @keyframes wrongAnswer {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        /* 庆祝效果 */
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .firework {
+            position: absolute;
+            font-size: 2em;
+            animation: fireworkAnimation 2s ease-out forwards;
+        }
+
+        @keyframes fireworkAnimation {
+            0% {
+                opacity: 1;
+                transform: translateY(100vh) scale(0);
+            }
+            50% {
+                opacity: 1;
+                transform: translateY(50vh) scale(1.5);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(0vh) scale(0.5);
+            }
+        }
+
+        /* 成就提示 */
+        .achievement {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(145deg, #ff6b6b, #feca57);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 25px;
+            font-size: 1.3em;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 1001;
+            display: none;
+            text-align: center;
+            animation: achievementShow 0.5s ease-out;
+        }
+
+        @keyframes achievementShow {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        /* 魔法粒子效果 */
+        .magic-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: radial-gradient(circle, #ffd93d, #ff6b6b);
+            border-radius: 50%;
+            animation: particleFloat 3s infinite ease-in-out;
+        }
+
+        @keyframes particleFloat {
+            0%, 100% { 
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            50% { 
+                transform: translateY(-50px) rotate(180deg);
+                opacity: 0.7;
+            }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .main-title { font-size: 2em; }
+            .factory-area { margin: 10px; padding: 20px; }
+            .candy-production { flex-direction: column; }
+            .wizard-character { font-size: 3em; }
+            .answer-option { width: 70px; height: 70px; font-size: 1.8em; }
+        }
+
+        @media (max-width: 480px) {
+            .main-title { font-size: 1.8em; }
+            .candy-production { gap: 15px; }
+            .answer-options { gap: 10px; }
+            .wizard-speech { font-size: 0.9em; max-width: 280px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 工厂背景 -->
+    <div class="factory-background">
+        <div class="factory-smoke smoke1"></div>
+        <div class="factory-smoke smoke2"></div>
+        <div class="factory-smoke smoke3"></div>
+    </div>
+
+    <!-- 魔法粒子效果 -->
+    <div class="magic-particles" id="magicParticles"></div>
+
+    <!-- 标题区 -->
+    <div class="title">
+        <h1 class="main-title">🍭 魔法糖果工厂 🍭</h1>
+        <p class="subtitle">和魔法师一起制作美味糖果，学习神奇的加法魔法！</p>
+    </div>
+
+    <!-- 游戏控制 -->
+    <div class="game-controls">
+        <button class="control-button start-btn" id="startBtn" onclick="startGame()">
+            <i class="fas fa-play"></i> 开始制作糖果
+        </button>
+        <button class="control-button next-btn" id="nextBtn" onclick="nextLevel()">
+            <i class="fas fa-arrow-right"></i> 下一关
+        </button>
+        <button class="control-button reset-btn" onclick="resetGame()">
+            <i class="fas fa-redo"></i> 重新开始
+        </button>
+    </div>
+
+    <!-- 分数显示 -->
+    <div class="score-board">
+        <div class="score">
+            关卡: <span id="currentLevel">1</span> / 10 | 
+            得分: <span id="score">0</span> | 
+            正确率: <span id="accuracy">100%</span>
+        </div>
+    </div>
+
+    <!-- 魔法师角色 -->
+    <div class="wizard-area">
+        <div class="wizard-character emoji" id="wizard" onclick="getHint()">
+            🧙‍♂️
+        </div>
+        <div class="wizard-speech" id="wizardSpeech">
+            欢迎来到魔法糖果工厂！我是糖果魔法师，点击我可以获得提示哦～
+        </div>
+    </div>
+
+    <!-- 糖果工厂主体 -->
+    <div class="factory-area">
+        <h2 class="level-title" id="levelTitle">准备开始制作糖果！</h2>
+        
+        <div class="candy-production" id="candyProduction">
+            <p style="text-align: center; color: #666; font-size: 1.2em;">
+                点击"开始制作糖果"按钮开始你的魔法之旅！
+            </p>
+        </div>
+
+        <!-- 关卡完成卡片 -->
+        <div class="level-complete-card" id="levelCompleteCard">
+            <div class="level-complete-title">🎉 关卡完成！</div>
+            <div class="level-complete-message" id="completeMessage">
+                太棒了！你成功制作了美味的糖果！
+            </div>
+            <div class="complete-stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="levelScore">+20</div>
+                    <div class="stat-label">本关得分</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="totalScore">100</div>
+                    <div class="stat-label">总分</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="nextLevelNum">2</div>
+                    <div class="stat-label">下一关</div>
+                </div>
+            </div>
+            <button class="next-level-btn" onclick="nextLevel()">
+                <i class="fas fa-arrow-right"></i> 制作下一种糖果
+            </button>
+        </div>
+    </div>
+
+    <!-- 庆祝效果容器 -->
+    <div class="celebration" id="celebration"></div>
+
+    <!-- 成就提示 -->
+    <div class="achievement" id="achievement">
+        恭喜你答对了！🎉
+    </div>
+
+    <script>
+        class CandyFactoryGame {
+            constructor() {
+                this.currentLevel = 1;
+                this.maxLevels = 10;  // 10关覆盖0-10的加法
+                this.score = 0;
+                this.totalQuestions = 0;
+                this.correctAnswers = 0;
+                this.gameStarted = false;
+                
+                // 魔法师表情图片
+                this.wizardImages = {
+                    happy: 'images/wizard-happy.png',
+                    thinking: 'images/wizard-thinking.png',
+                    celebrating: 'images/wizard-celebrating.png',
+                    encouraging: 'images/wizard-encouraging.png'
+                };
+                this.useImages = false; // 是否使用图片，默认使用emoji
+                
+                // 加法题目数据 - 从简单到复杂
+                this.levels = [
+                    // 关卡1-2: 0-5的简单加法
+                    { range: [0, 3], description: "制作小糖果 (0-3)" },
+                    { range: [0, 5], description: "制作彩虹糖果 (0-5)" },
+                    
+                    // 关卡3-4: 0-6的进阶加法
+                    { range: [0, 6], description: "制作水果糖果 (0-6)" },
+                    { range: [1, 6], description: "制作巧克力糖果 (1-6)" },
+                    
+                    // 关卡5-6: 0-8的中级加法
+                    { range: [0, 8], description: "制作棉花糖 (0-8)" },
+                    { range: [2, 8], description: "制作牛奶糖 (2-8)" },
+                    
+                    // 关卡7-8: 0-9的高级加法
+                    { range: [0, 9], description: "制作魔法糖果 (0-9)" },
+                    { range: [3, 9], description: "制作彩色软糖 (3-9)" },
+                    
+                    // 关卡9-10: 0-10的完整加法
+                    { range: [0, 10], description: "制作终极糖果 (0-10)" },
+                    { range: [5, 10], description: "制作传说糖果 (5-10)" }
+                ];
+                
+                // 糖果图标数组
+                this.candyTypes = ['🍬', '🍭', '🧁', '🍪', '🍩', '🎂', '🍰', '🍫', '🍯', '🧊'];
+                
+                // 魔法师话语
+                this.wizardMessages = [
+                    "太棒了！你的加法魔法越来越强了！✨",
+                    "哇！这些糖果制作得真完美！🍭",
+                    "你是个天生的糖果魔法师！🧙‍♂️",
+                    "继续加油，更美味的糖果等着你！🌟",
+                    "每一次计算都让糖果更加美味！💫"
+                ];
+                
+                this.currentNumbers = { a: 0, b: 0 };
+                this.correctAnswer = 0;
+                this.options = [];
+                
+                this.init();
+            }
+            
+            init() {
+                this.createMagicParticles();
+                this.updateDisplay();
+                this.checkImagesAvailability();
+            }
+            
+            checkImagesAvailability() {
+                // 检查图片是否存在，如果存在则使用图片
+                const img = new Image();
+                img.onload = () => {
+                    this.useImages = true;
+                    this.updateWizardAppearance('happy');
+                };
+                img.onerror = () => {
+                    this.useImages = false;
+                    console.log('使用emoji作为魔法师角色 - 图片未找到');
+                };
+                img.src = this.wizardImages.happy;
+            }
+            
+            updateWizardAppearance(mood = 'happy') {
+                const wizard = document.getElementById('wizard');
+                
+                if (this.useImages && this.wizardImages[mood]) {
+                    wizard.className = 'wizard-character';
+                    wizard.innerHTML = `<img src="${this.wizardImages[mood]}" alt="糖果魔法师">`;
+                } else {
+                    wizard.className = 'wizard-character emoji';
+                    // 根据心情切换emoji
+                    const moodEmojis = {
+                        happy: '🧙‍♂️',
+                        thinking: '🤔',
+                        celebrating: '🎉',
+                        encouraging: '✨'
+                    };
+                    wizard.innerHTML = moodEmojis[mood] || '🧙‍♂️';
+                }
+            }
+            
+            createMagicParticles() {
+                const container = document.getElementById('magicParticles');
+                for (let i = 0; i < 15; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 3 + 's';
+                    particle.style.animationDuration = (2 + Math.random() * 2) + 's';
+                    container.appendChild(particle);
+                }
+            }
+            
+            startGame() {
+                this.gameStarted = true;
+                this.currentLevel = 1;
+                this.score = 0;
+                this.totalQuestions = 0;
+                this.correctAnswers = 0;
+                
+                document.getElementById('startBtn').style.display = 'none';
+                this.generateLevel();
+                this.updateWizardMessage("开始制作魔法糖果吧！数一数需要多少糖果哦～");
+            }
+            
+            generateLevel() {
+                const levelConfig = this.levels[this.currentLevel - 1];
+                document.getElementById('levelTitle').textContent = `第${this.currentLevel}关: ${levelConfig.description}`;
+                
+                // 生成加法题目 - 改进的智能算法
+                const minNum = levelConfig.range[0];
+                const maxNum = levelConfig.range[1];
+                
+                // 使用权重系统来减少0和1的出现频率
+                this.currentNumbers = this.generateSmartNumbers(minNum, maxNum);
+                this.correctAnswer = this.currentNumbers.a + this.currentNumbers.b;
+                
+                this.generateOptions();
+                this.renderCandyProduction();
+                this.updateDisplay();
+            }
+            
+            // 新增：智能数字生成器，减少0和1的出现频率
+            generateSmartNumbers(minNum, maxNum) {
+                let attempts = 0;
+                const maxAttempts = 20;
+                
+                while (attempts < maxAttempts) {
+                    // 生成第一个数字（优先避免0和1）
+                    let a = this.generateWeightedNumber(minNum, maxNum);
+                    
+                    // 计算第二个数字的有效范围（确保和不超过10）
+                    let maxForB = Math.min(maxNum, 10 - a);
+                    
+                    // 生成第二个数字（优先避免0和1）
+                    let b = this.generateWeightedNumber(0, maxForB);
+                    
+                    // 检查是否满足条件
+                    if (a + b <= 10 && a >= minNum && b >= 0) {
+                        // 额外检查：避免两个数都是0或1
+                        if (!(a <= 1 && b <= 1)) {
+                            return { a, b };
+                        }
+                    }
+                    
+                    attempts++;
+                }
+                
+                // 如果智能生成失败，使用备用方案
+                const a = Math.floor(Math.random() * (maxNum - minNum + 1)) + minNum;
+                let b = Math.floor(Math.random() * (Math.min(maxNum, 10 - a) + 1));
+                
+                return { a, b };
+            }
+            
+            // 权重随机数生成器
+            generateWeightedNumber(min, max) {
+                if (min > max) return min;
+                
+                // 创建权重数组
+                const weights = [];
+                for (let i = min; i <= max; i++) {
+                    let weight;
+                    if (i === 0) {
+                        weight = 0.3; // 0的权重降到30%
+                    } else if (i === 1) {
+                        weight = 0.5; // 1的权重降到50%
+                    } else {
+                        weight = 1.0; // 其他数字保持100%权重
+                    }
+                    weights.push(weight);
+                }
+                
+                // 计算累积权重
+                const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+                const random = Math.random() * totalWeight;
+                
+                let cumulativeWeight = 0;
+                for (let i = 0; i < weights.length; i++) {
+                    cumulativeWeight += weights[i];
+                    if (random <= cumulativeWeight) {
+                        return min + i;
+                    }
+                }
+                
+                // 备用返回
+                return max;
+            }
+            
+            generateOptions() {
+                this.options = [this.correctAnswer];
+                
+                // 生成3个错误选项
+                while (this.options.length < 4) {
+                    let wrongAnswer = this.correctAnswer + Math.floor(Math.random() * 6) - 3;
+                    wrongAnswer = Math.max(0, Math.min(10, wrongAnswer)); // 限制在0-10范围内
+                    
+                    if (!this.options.includes(wrongAnswer)) {
+                        this.options.push(wrongAnswer);
+                    }
+                }
+                
+                // 打乱选项顺序
+                this.options = this.shuffleArray(this.options);
+            }
+            
+            renderCandyProduction() {
+                const container = document.getElementById('candyProduction');
+                const candyTypeA = this.candyTypes[this.currentNumbers.a % this.candyTypes.length];
+                const candyTypeB = this.candyTypes[this.currentNumbers.b % this.candyTypes.length];
+                
+                container.innerHTML = `
+                    <div class="candy-group">
+                        <div class="candy-container" id="candyGroupA">
+                            <!-- 糖果将通过动画添加 -->
+                        </div>
+                        <div class="candy-count">${this.currentNumbers.a}</div>
+                    </div>
+                    
+                    <div class="operator">+</div>
+                    
+                    <div class="candy-group">
+                        <div class="candy-container" id="candyGroupB">
+                            <!-- 糖果将通过动画添加 -->
+                        </div>
+                        <div class="candy-count">${this.currentNumbers.b}</div>
+                    </div>
+                    
+                    <div class="operator equals">=</div>
+                    
+                    <div class="candy-group">
+                        <div style="font-size: 3em; color: #ff6b6b;">❓</div>
+                        <div style="font-size: 1.2em; color: #666; margin-top: 10px;">选择答案</div>
+                    </div>
+                `;
+                
+                // 动画添加糖果
+                setTimeout(() => this.animateCandy('candyGroupA', candyTypeA, this.currentNumbers.a), 500);
+                setTimeout(() => this.animateCandy('candyGroupB', candyTypeB, this.currentNumbers.b), 1000);
+                setTimeout(() => this.showOptions(), 1500);
+            }
+            
+            animateCandy(containerId, candyType, count) {
+                const container = document.getElementById(containerId);
+                container.innerHTML = '';
+                
+                for (let i = 0; i < count; i++) {
+                    setTimeout(() => {
+                        const candy = document.createElement('div');
+                        candy.className = 'candy';
+                        candy.textContent = candyType;
+                        candy.style.animationDelay = i * 0.1 + 's';
+                        container.appendChild(candy);
+                    }, i * 100);
+                }
+            }
+            
+            showOptions() {
+                const container = document.getElementById('candyProduction');
+                const optionsHtml = `
+                    <div class="answer-options">
+                        ${this.options.map((option, index) => `
+                            <div class="answer-option option-${(index % 4) + 1}" onclick="selectAnswer(${option})">
+                                ${option}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                
+                container.innerHTML += optionsHtml;
+            }
+            
+            selectAnswer(selectedAnswer) {
+                this.totalQuestions++;
+                
+                const options = document.querySelectorAll('.answer-option');
+                options.forEach(option => {
+                    option.style.pointerEvents = 'none';
+                    if (parseInt(option.textContent) === selectedAnswer) {
+                        if (selectedAnswer === this.correctAnswer) {
+                            option.classList.add('correct');
+                            this.handleCorrectAnswer();
+                        } else {
+                            option.classList.add('wrong');
+                            this.handleWrongAnswer();
+                        }
+                    }
+                });
+                
+                // 显示正确答案
+                setTimeout(() => {
+                    options.forEach(option => {
+                        if (parseInt(option.textContent) === this.correctAnswer && selectedAnswer !== this.correctAnswer) {
+                            option.style.background = 'linear-gradient(145deg, #26de81, #20bf6b)';
+                            option.style.transform = 'scale(1.1)';
+                        }
+                    });
+                }, 800);
+                
+                setTimeout(() => {
+                    if (this.currentLevel < this.maxLevels) {
+                        this.showLevelCompleteCard();
+                    } else {
+                        this.gameComplete();
+                    }
+                }, 2000);
+            }
+            
+            handleCorrectAnswer() {
+                this.correctAnswers++;
+                this.score += 20;
+                this.createFireworks();
+                this.showAchievement('太棒了！答对了！🎉');
+                
+                // 魔法师庆祝表情
+                this.updateWizardAppearance('celebrating');
+                
+                const randomMessage = this.wizardMessages[Math.floor(Math.random() * this.wizardMessages.length)];
+                this.updateWizardMessage(randomMessage);
+                
+                // 显示完整的糖果结果
+                this.showCompleteAnswer();
+                
+                // 2秒后恢复开心表情
+                setTimeout(() => this.updateWizardAppearance('happy'), 2000);
+            }
+            
+            handleWrongAnswer() {
+                this.showAchievement('再想想看！💭 正确答案是 ' + this.correctAnswer);
+                
+                // 魔法师鼓励表情
+                this.updateWizardAppearance('encouraging');
+                this.updateWizardMessage("没关系，魔法需要练习！让我们再试试看～");
+                
+                // 显示完整的糖果结果
+                setTimeout(() => this.showCompleteAnswer(), 1000);
+                
+                // 3秒后恢复开心表情
+                setTimeout(() => this.updateWizardAppearance('happy'), 3000);
+            }
+            
+            showCompleteAnswer() {
+                // 创建完整答案的糖果显示
+                const resultCandy = this.candyTypes[this.correctAnswer % this.candyTypes.length];
+                const questionMark = document.querySelector('.candy-group:last-child');
+                
+                if (questionMark) {
+                    questionMark.innerHTML = `
+                        <div class="candy-container">
+                            ${Array(this.correctAnswer).fill(resultCandy).map((candy, index) => 
+                                `<div class="candy" style="animation-delay: ${index * 0.1}s;">${candy}</div>`
+                            ).join('')}
+                        </div>
+                        <div class="candy-count">${this.correctAnswer}</div>
+                    `;
+                }
+            }
+
+            showLevelCompleteCard() {
+                const card = document.getElementById('levelCompleteCard');
+                const levelConfig = this.levels[this.currentLevel - 1];
+                
+                // 更新卡片内容
+                document.getElementById('completeMessage').textContent = 
+                    `第${this.currentLevel}关完成！你成功制作了${levelConfig.description}！`;
+                document.getElementById('levelScore').textContent = '+20';
+                document.getElementById('totalScore').textContent = this.score;
+                document.getElementById('nextLevelNum').textContent = this.currentLevel + 1;
+                
+                // 如果是最后一关，改变按钮文字
+                const nextBtn = card.querySelector('.next-level-btn');
+                if (this.currentLevel === this.maxLevels - 1) {
+                    nextBtn.innerHTML = '<i class="fas fa-trophy"></i> 最后一关挑战';
+                } else {
+                    nextBtn.innerHTML = '<i class="fas fa-arrow-right"></i> 制作下一种糖果';
+                }
+                
+                // 显示卡片
+                card.style.display = 'block';
+                
+                // 滚动到卡片位置
+                setTimeout(() => {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+            }
+            
+            nextLevel() {
+                this.currentLevel++;
+                
+                // 隐藏完成卡片和顶部按钮
+                document.getElementById('levelCompleteCard').style.display = 'none';
+                document.getElementById('nextBtn').style.display = 'none';
+                
+                this.generateLevel();
+                
+                if (this.currentLevel <= 5) {
+                    this.updateWizardMessage(`第${this.currentLevel}关开始！制作更复杂的糖果吧！`);
+                } else {
+                    this.updateWizardMessage(`高级挑战第${this.currentLevel}关！你已经是高级糖果师了！`);
+                }
+            }
+            
+            gameComplete() {
+                this.createFireworks();
+                this.showGameCompletion();
+            }
+            
+            showGameCompletion() {
+                setTimeout(() => {
+                    const accuracy = Math.round((this.correctAnswers / this.totalQuestions) * 100);
+                    
+                    const popup = document.createElement('div');
+                    popup.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0,0,0,0.8);
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        z-index: 2000;
+                    `;
+                    
+                    popup.innerHTML = `
+                        <div style="
+                            background: white;
+                            border-radius: 25px;
+                            padding: 40px;
+                            max-width: 600px;
+                            width: 90%;
+                            text-align: center;
+                            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                            max-height: 80vh;
+                            overflow-y: auto;
+                        ">
+                            <h2 style="color: #ff6b6b; margin-bottom: 20px; font-size: 2.2em;">
+                                🎉 恭喜完成魔法糖果工厂！🎉
+                            </h2>
+                            <div style="font-size: 1.3em; color: #27ae60; margin-bottom: 25px;">
+                                🏆 总得分：${this.score} 分<br>
+                                📊 正确率：${accuracy}%<br>
+                                🍭 制作糖果：${this.totalQuestions} 种
+                            </div>
+                            
+                            <div style="text-align: left; margin: 25px 0;">
+                                <h3 style="color: #e74c3c; margin-bottom: 15px; text-align: center;">📚 今天学到的加法魔法：</h3>
+                                
+                                <div style="margin-bottom: 15px; padding: 15px; background: #f8f9fa; border-radius: 15px;">
+                                    <strong style="color: #3742fa;">🧮 加法概念：</strong><br>
+                                    学会了把两堆糖果合并在一起，理解了"+"符号的神奇作用，知道加法就是把数量合在一起！
+                                </div>
+                                
+                                <div style="margin-bottom: 15px; padding: 15px; background: #f8f9fa; border-radius: 15px;">
+                                    <strong style="color: #3742fa;">🔢 0-10加法运算：</strong><br>
+                                    熟练掌握了0到10以内的所有加法组合，为学习更大数字的加法打下了坚实基础！
+                                </div>
+                                
+                                <div style="margin-bottom: 15px; padding: 15px; background: #f8f9fa; border-radius: 15px;">
+                                    <strong style="color: #3742fa;">👁️ 数量观察能力：</strong><br>
+                                    通过观察糖果数量，提高了数数能力和数量感知，学会用眼睛快速判断物品数量！
+                                </div>
+                                
+                                <div style="margin-bottom: 15px; padding: 15px; background: #f8f9fa; border-radius: 15px;">
+                                    <strong style="color: #3742fa;">🧠 计算策略：</strong><br>
+                                    学会了通过数糖果来验证加法结果，建立了具体物体与抽象数字之间的联系！
+                                </div>
+                                
+                                <div style="margin-bottom: 15px; padding: 15px; background: #e8f5e8; border-radius: 15px; border-left: 4px solid #27ae60;">
+                                    <strong style="color: #27ae60;">🎓 第2周第1课完成：</strong><br>
+                                    恭喜你成为了魔法糖果工厂的高级糖果师！现在你已经完全掌握了0-10的加法运算，为学习减法和更复杂的数学做好了准备！
+                                </div>
+                            </div>
+                            
+                            <div style="margin-top: 25px;">
+                                <button onclick="this.parentElement.parentElement.remove(); game.resetGame();" style="
+                                    padding: 15px 30px;
+                                    font-size: 1.2em;
+                                    background: linear-gradient(145deg, #ff6b6b, #feca57);
+                                    color: white;
+                                    border: none;
+                                    border-radius: 25px;
+                                    cursor: pointer;
+                                    margin: 8px;
+                                    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                                ">🍭 再次制作糖果</button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(popup);
+                }, 1000);
+            }
+            
+            resetGame() {
+                this.currentLevel = 1;
+                this.score = 0;
+                this.totalQuestions = 0;
+                this.correctAnswers = 0;
+                this.gameStarted = false;
+                
+                document.getElementById('startBtn').style.display = 'inline-block';
+                document.getElementById('nextBtn').style.display = 'none';
+                document.getElementById('levelCompleteCard').style.display = 'none';
+                document.getElementById('levelTitle').textContent = '准备开始制作糖果！';
+                document.getElementById('candyProduction').innerHTML = `
+                    <p style="text-align: center; color: #666; font-size: 1.2em;">
+                        点击"开始制作糖果"按钮开始你的魔法之旅！
+                    </p>
+                `;
+                
+                this.updateWizardMessage("欢迎回到魔法糖果工厂！准备好制作美味的糖果了吗？");
+                this.updateWizardAppearance('happy');
+                this.updateDisplay();
+            }
+            
+            updateWizardMessage(message) {
+                const speech = document.getElementById('wizardSpeech');
+                speech.textContent = message;
+                
+                const wizard = document.getElementById('wizard');
+                wizard.style.animation = 'float 0.8s ease-in-out';
+                setTimeout(() => {
+                    wizard.style.animation = 'float 3s ease-in-out infinite';
+                }, 800);
+            }
+            
+            getHint() {
+                if (!this.gameStarted) return;
+                
+                // 魔法师思考表情
+                this.updateWizardAppearance('thinking');
+                
+                const hints = [
+                    `数一数第一堆有${this.currentNumbers.a}个糖果！🍬`,
+                    `再数一数第二堆有${this.currentNumbers.b}个糖果！🍭`,
+                    `把两堆糖果合起来，一共有多少个呢？🤔`,
+                    `提示：${this.currentNumbers.a} + ${this.currentNumbers.b} = ?`,
+                    `你可以用手指头帮助计算哦！👋`
+                ];
+                
+                const randomHint = hints[Math.floor(Math.random() * hints.length)];
+                this.updateWizardMessage(randomHint);
+                
+                // 3秒后恢复开心表情
+                setTimeout(() => this.updateWizardAppearance('happy'), 3000);
+            }
+            
+            createFireworks() {
+                const celebration = document.getElementById('celebration');
+                const fireworks = ['🎆', '🎇', '✨', '🌟', '💫', '⭐', '🎉', '🎊'];
+                
+                for (let i = 0; i < 8; i++) {
+                    setTimeout(() => {
+                        const firework = document.createElement('div');
+                        firework.className = 'firework';
+                        firework.textContent = fireworks[Math.floor(Math.random() * fireworks.length)];
+                        firework.style.left = Math.random() * 90 + 5 + '%';
+                        celebration.appendChild(firework);
+                        
+                        setTimeout(() => {
+                            if (firework.parentNode) {
+                                firework.parentNode.removeChild(firework);
+                            }
+                        }, 2000);
+                    }, i * 200);
+                }
+            }
+            
+            showAchievement(message) {
+                const achievement = document.getElementById('achievement');
+                achievement.textContent = message;
+                achievement.style.display = 'block';
+                
+                setTimeout(() => {
+                    achievement.style.display = 'none';
+                }, 3000);
+            }
+            
+            updateDisplay() {
+                document.getElementById('currentLevel').textContent = this.currentLevel;
+                document.getElementById('score').textContent = this.score;
+                
+                const accuracy = this.totalQuestions > 0 ? 
+                    Math.round((this.correctAnswers / this.totalQuestions) * 100) : 100;
+                document.getElementById('accuracy').textContent = accuracy + '%';
+            }
+            
+            shuffleArray(array) {
+                const shuffled = [...array];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                return shuffled;
+            }
+        }
+        
+        // 全局变量和函数
+        let game;
+        
+        function initGame() {
+            game = new CandyFactoryGame();
+        }
+        
+        function startGame() {
+            game.startGame();
+        }
+        
+        function nextLevel() {
+            game.nextLevel();
+        }
+        
+        function resetGame() {
+            game.resetGame();
+        }
+        
+        function selectAnswer(answer) {
+            game.selectAnswer(answer);
+        }
+        
+        function getHint() {
+            game.getHint();
+        }
+        
+        // 页面加载完成后初始化游戏
+        document.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数字记忆挑战 - 幼小衔接数学游戏</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 25px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 900px;
+            width: 95%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .title {
+            font-size: 2.5em;
+            color: #4a90e2;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #4a90e2, #7b68ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .score-board {
+            background: linear-gradient(145deg, #dcedc1, #a8e6cf);
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .game-area {
+            background: linear-gradient(145deg, #e8f4fd, #cfe7fc);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 400px;
+        }
+
+        .challenge-title {
+            text-align: center;
+            font-size: 1.5em;
+            color: #2c5aa0;
+            margin-bottom: 20px;
+        }
+
+        /* 翻牌游戏样式 */
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .memory-card {
+            aspect-ratio: 1;
+            background: linear-gradient(145deg, #ff9a9e, #fad0c4);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border: 3px solid #fd79a8;
+        }
+
+        .memory-card.flipped {
+            background: linear-gradient(145deg, #4CAF50, #45a049);
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        .memory-card.matched {
+            background: linear-gradient(145deg, #00d2d3, #54a0ff);
+            color: white;
+            animation: matchPulse 0.6s ease;
+        }
+
+        /* 拼图游戏样式 */
+        .puzzle-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .puzzle-pieces {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .puzzle-piece {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(145deg, #ff6b6b, #ee5a24);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid #fff;
+        }
+
+        .puzzle-target {
+            width: 200px;
+            height: 200px;
+            border: 3px dashed #7b68ee;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4em;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+
+        .puzzle-target.filled {
+            background: linear-gradient(145deg, #26de81, #20bf6b);
+            color: white;
+            border-style: solid;
+        }
+
+        /* 找规律游戏样式 */
+        .pattern-sequence {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .pattern-item {
+            width: 70px;
+            height: 70px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(145deg, #f368e0, #ff9ff3);
+            border: 3px solid #fff;
+        }
+
+        .pattern-item.empty {
+            background: linear-gradient(145deg, #ddd, #ccc);
+            border: 3px dashed #999;
+            color: #999;
+        }
+
+        .pattern-options {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .pattern-option {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(145deg, #4834d4, #686de0);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid #fff;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(145deg, #4834d4, #686de0);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(145deg, #ff6348, #ff4757);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .achievement {
+            background: linear-gradient(145deg, #ffd700, #ffb347);
+            color: #8b4513;
+            padding: 10px;
+            border-radius: 15px;
+            margin: 10px 0;
+            text-align: center;
+            font-weight: bold;
+            animation: achievement-glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes achievement-glow {
+            from { box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+            to { box-shadow: 0 0 20px rgba(255, 215, 0, 0.8); }
+        }
+
+        @keyframes matchPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .firework {
+            position: absolute;
+            font-size: 2em;
+            animation: firework 2s ease-out forwards;
+        }
+
+        @keyframes firework {
+            0% {
+                transform: translateY(100vh) scale(0);
+                opacity: 1;
+            }
+            50% {
+                transform: translateY(20vh) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(0) scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* 卡通角色和交互元素 */
+        .mascot-area {
+            text-align: center;
+            margin: 15px 0;
+            position: relative;
+        }
+
+        .mascot {
+            font-size: 3em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+            animation: bounce 2s infinite;
+        }
+
+        .mascot:hover {
+            transform: scale(1.2) rotate(10deg);
+        }
+
+        .mascot-speech {
+            background: linear-gradient(145deg, #fff, #f8f9fa);
+            border: 2px solid #4a90e2;
+            border-radius: 20px;
+            padding: 10px 15px;
+            margin: 10px auto;
+            max-width: 300px;
+            font-size: 0.9em;
+            color: #2c5aa0;
+            position: relative;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .mascot-speech::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 10px solid #4a90e2;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        /* 特殊游戏元素 */
+        .sequence-game {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .number-sequence {
+            display: flex;
+            gap: 8px;
+            margin: 15px 0;
+            justify-content: center;
+        }
+
+        .sequence-number {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            background: linear-gradient(145deg, #74b9ff, #0984e3);
+            color: white;
+            border: 2px solid #fff;
+        }
+
+        .sequence-number.missing {
+            background: linear-gradient(145deg, #ddd, #ccc);
+            color: #999;
+            border: 2px dashed #999;
+        }
+
+        .counting-game {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .objects-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(116, 185, 255, 0.1);
+            border-radius: 15px;
+        }
+
+        .count-object {
+            font-size: 2em;
+            animation: popIn 0.5s ease forwards;
+            opacity: 0;
+        }
+
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: scale(0);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .number-options {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .number-option {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(145deg, #fd79a8, #e84393);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid #fff;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        .number-option:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        @media (max-width: 768px) {
+            .title { font-size: 2em; }
+            .memory-grid { grid-template-columns: repeat(3, 1fr); }
+            .puzzle-area { flex-direction: column; }
+            .pattern-sequence { gap: 10px; }
+            .pattern-item { width: 60px; height: 60px; font-size: 1.5em; }
+            .mascot { font-size: 2.5em; }
+            .mascot-speech { font-size: 0.8em; max-width: 250px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1 class="title">🧠 数字记忆挑战 🧠</h1>
+        </div>
+
+        <div class="score-board">
+            <div class="score">
+                关卡: <span id="currentChallenge">1</span> / 12 | 
+                得分: <span id="score">0</span> | 
+                时间: <span id="timer">00:00</span> |
+                生命: <span id="lives">❤️❤️❤️</span>
+            </div>
+        </div>
+        
+        <div class="mascot-area">
+            <div class="mascot" id="gameMascot" onclick="cheerMascot()">
+                🐰
+            </div>
+            <div class="mascot-speech" id="mascotSpeech">
+                欢迎来到数字记忆世界！点击我获得提示哦～
+            </div>
+        </div>
+
+        <div class="game-area">
+            <h2 class="challenge-title" id="challengeTitle">记忆翻牌挑战</h2>
+            
+            <div id="gameContent">
+                <p style="text-align: center; color: #666; font-size: 1.2em;">点击开始挑战按钮开始游戏！</p>
+            </div>
+
+            <div id="achievement" class="achievement" style="display: none;"></div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" id="startBtn" onclick="startGame()">开始挑战</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="nextChallenge()" style="display: none;">下一关</button>
+            <button class="btn btn-secondary" onclick="resetGame()">重新开始</button>
+        </div>
+
+        <div class="celebration" id="celebration"></div>
+    </div>
+
+    <script>
+        class NumberMemoryGame {
+            constructor() {
+                this.currentChallenge = 1;
+                this.maxChallenges = 12;
+                this.score = 0;
+                this.lives = 3;
+                this.gameStarted = false;
+                this.timerInterval = null;
+                this.startTime = 0;
+                
+                // 12关挑战类型
+                this.challenges = [
+                    // 1-3关：基础记忆翻牌
+                    { type: 'memory', title: '记忆翻牌挑战 第1关', level: 1, pairs: 3 },
+                    { type: 'memory', title: '记忆翻牌挑战 第2关', level: 2, pairs: 4 },
+                    { type: 'memory', title: '记忆翻牌挑战 第3关', level: 3, pairs: 5 },
+                    // 4-6关：数字拼图挑战
+                    { type: 'puzzle', title: '数字拼图挑战 第4关', level: 1 },
+                    { type: 'counting', title: '数数游戏 第5关', level: 2 },
+                    { type: 'sequence', title: '数字排列 第6关', level: 3 },
+                    // 7-9关：规律发现
+                    { type: 'pattern', title: '规律发现 第7关', level: 1 },
+                    { type: 'pattern', title: '规律发现 第8关', level: 2 },
+                    { type: 'pattern', title: '规律发现 第9关', level: 3 },
+                    // 10-12关：综合挑战
+                    { type: 'mixed', title: '综合挑战 第10关', level: 1 },
+                    { type: 'mixed', title: '综合挑战 第11关', level: 2 },
+                    { type: 'boss', title: '终极挑战 第12关', level: 3 }
+                ];
+                
+                // 各种游戏数据
+                this.memoryCards = [];
+                this.flippedCards = [];
+                this.matchedPairs = 0;
+                this.puzzleNumbers = [];
+                this.targetNumber = 0;
+                this.patternSequence = [];
+                this.patternAnswer = 0;
+                this.currentObjects = [];
+                this.currentSequence = [];
+                
+                // 卡通元素
+                this.mascotMessages = [
+                    '加油！你可以的！😄',
+                    '太棒了！继续加油！🎉',
+                    '不要紧张，慢慢来～😊',
+                    '你真是数字大师！🏆',
+                    '努力思考，相信自己！✨'
+                ];
+                
+                this.init();
+            }
+
+            init() {
+                this.updateDisplay();
+            }
+
+            startGame() {
+                this.gameStarted = true;
+                this.startTime = Date.now();
+                this.startTimer();
+                document.getElementById('startBtn').style.display = 'none';
+                this.generateChallenge();
+            }
+
+            startTimer() {
+                this.timerInterval = setInterval(() => {
+                    const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+                    const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                    const seconds = (elapsed % 60).toString().padStart(2, '0');
+                    document.getElementById('timer').textContent = `${minutes}:${seconds}`;
+                }, 1000);
+            }
+
+            generateChallenge() {
+                const challenge = this.challenges[this.currentChallenge - 1];
+                document.getElementById('challengeTitle').textContent = challenge.title;
+                this.updateMascotMessage('欢迎来到' + challenge.title + '！加油哦！');
+                
+                switch(challenge.type) {
+                    case 'memory':
+                        this.generateMemoryChallenge(challenge.pairs || 3);
+                        break;
+                    case 'puzzle':
+                        this.generatePuzzleChallenge();
+                        break;
+                    case 'pattern':
+                        this.generatePatternChallenge(challenge.level);
+                        break;
+                    case 'counting':
+                        this.generateCountingChallenge();
+                        break;
+                    case 'sequence':
+                        this.generateSequenceChallenge();
+                        break;
+                    case 'mixed':
+                        this.generateMixedChallenge();
+                        break;
+                    case 'boss':
+                        this.generateBossChallenge();
+                        break;
+                }
+            }
+
+            generateMemoryChallenge(pairs = 3) {
+                // 根据难度生成不同数量的配对
+                const numbers = [];
+                for (let i = 1; i <= pairs; i++) {
+                    numbers.push(i, i);
+                }
+                this.memoryCards = this.shuffleArray(numbers);
+                this.flippedCards = [];
+                this.matchedPairs = 0;
+                this.targetPairs = pairs;
+                
+                const gameContent = document.getElementById('gameContent');
+                gameContent.innerHTML = `
+                    <div class="memory-grid" style="grid-template-columns: repeat(${Math.min(pairs + 1, 4)}, 1fr);" id="memoryGrid">
+                        ${this.memoryCards.map((num, index) => `
+                            <div class="memory-card" data-number="${num}" data-index="${index}" onclick="flipCard(${index})">
+                                <i class="fas fa-question"></i>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <p style="text-align: center; color: #666; margin-top: 15px;">
+                        找到${pairs}对相同的数字！已找到: <span id="matchCount">0</span> / ${pairs}
+                    </p>
+                `;
+            }
+
+            generatePuzzleChallenge() {
+                // 生成0-5的数字拼图
+                this.puzzleNumbers = this.shuffleArray([0, 1, 2, 3, 4, 5]);
+                this.targetNumber = Math.floor(Math.random() * 6);
+                
+                const gameContent = document.getElementById('gameContent');
+                gameContent.innerHTML = `
+                    <div class="puzzle-area">
+                        <div class="puzzle-pieces">
+                            ${this.puzzleNumbers.map((num, index) => `
+                                <div class="puzzle-piece" data-number="${num}" onclick="selectPuzzlePiece(${num})">
+                                    ${num}
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="puzzle-target" id="puzzleTarget">
+                            <div style="text-align: center;">
+                                <div style="font-size: 0.5em; color: #666;">目标数字</div>
+                                <div>${this.targetNumber}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <p style="text-align: center; color: #666; margin-top: 15px;">
+                        找到数字 ${this.targetNumber} 并点击它！
+                    </p>
+                `;
+            }
+
+            generatePatternChallenge(level = 1) {
+                // 根据难度生成不同的数字规律
+                const easyPatterns = [
+                    { sequence: [1, 2, 3, '?', 5], answer: 4, options: [4, 6, 7, 8] },
+                    { sequence: [0, 1, 2, '?', 4], answer: 3, options: [3, 5, 6, 7] },
+                ];
+                
+                const mediumPatterns = [
+                    { sequence: [0, 2, 4, '?', 8], answer: 6, options: [5, 6, 7, 9] },
+                    { sequence: [1, 1, 2, 2, '?'], answer: 3, options: [3, 4, 1, 2] },
+                ];
+                
+                const hardPatterns = [
+                    { sequence: [5, 4, 3, '?', 1], answer: 2, options: [2, 6, 7, 0] },
+                    { sequence: [1, 3, 5, '?', 9], answer: 7, options: [6, 7, 8, 4] },
+                ];
+                
+                let patterns;
+                if (level === 1) patterns = easyPatterns;
+                else if (level === 2) patterns = mediumPatterns;
+                else patterns = hardPatterns;
+                
+                const selectedPattern = patterns[Math.floor(Math.random() * patterns.length)];
+                this.patternSequence = selectedPattern.sequence;
+                this.patternAnswer = selectedPattern.answer;
+                
+                const gameContent = document.getElementById('gameContent');
+                gameContent.innerHTML = `
+                    <div class="pattern-sequence">
+                        ${this.patternSequence.map(item => `
+                            <div class="pattern-item ${item === '?' ? 'empty' : ''}">
+                                ${item}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="pattern-options">
+                        ${selectedPattern.options.map(option => `
+                            <div class="pattern-option" onclick="selectPattern(${option})">
+                                ${option}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <p style="text-align: center; color: #666; margin-top: 15px;">
+                        观察数字规律，选择正确的数字填入空白处
+                    </p>
+                `;
+            }
+            
+            generateCountingChallenge() {
+                // 数数游戏：数一数屏幕上有多少个物品
+                const objectCount = Math.floor(Math.random() * 8) + 3; // 3-10个物品
+                const objects = ['🍎', '🍌', '🍇', '🍓', '🍊', '🍍', '🍅', '🌶️'];
+                const selectedObject = objects[Math.floor(Math.random() * objects.length)];
+                
+                this.currentObjects = Array(objectCount).fill(selectedObject);
+                this.targetNumber = objectCount;
+                
+                const gameContent = document.getElementById('gameContent');
+                gameContent.innerHTML = `
+                    <div class="counting-game">
+                        <p style="font-size: 1.2em; color: #2c5aa0; margin-bottom: 20px;">
+                            数一数下面有多少个 ${selectedObject}？
+                        </p>
+                        <div class="objects-container" id="objectsContainer">
+                            ${this.currentObjects.map((obj, index) => `
+                                <div class="count-object" style="animation-delay: ${index * 0.1}s;">${obj}</div>
+                            `).join('')}
+                        </div>
+                        <div class="number-options">
+                            ${this.generateCountingOptions().map(option => `
+                                <div class="number-option" onclick="selectCountingAnswer(${option})">
+                                    ${option}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            generateSequenceChallenge() {
+                // 数字排列游戏：按顺序排列数字
+                const start = Math.floor(Math.random() * 5);
+                const length = 5;
+                const sequence = [];
+                for (let i = start; i < start + length; i++) {
+                    sequence.push(i);
+                }
+                
+                // 随机选择一个位置作为空白
+                const missingIndex = Math.floor(Math.random() * length);
+                const correctAnswer = sequence[missingIndex];
+                
+                this.currentSequence = [...sequence];
+                this.currentSequence[missingIndex] = '?';
+                this.patternAnswer = correctAnswer;
+                
+                const gameContent = document.getElementById('gameContent');
+                gameContent.innerHTML = `
+                    <div class="sequence-game">
+                        <p style="font-size: 1.2em; color: #2c5aa0; margin-bottom: 20px;">
+                            按顺序排列数字，找出缺少的数字：
+                        </p>
+                        <div class="number-sequence">
+                            ${this.currentSequence.map(num => `
+                                <div class="sequence-number ${num === '?' ? 'missing' : ''}">
+                                    ${num}
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="number-options">
+                            ${this.generateSequenceOptions(correctAnswer).map(option => `
+                                <div class="number-option" onclick="selectSequenceAnswer(${option})">
+                                    ${option}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            generateMixedChallenge() {
+                // 随机选择一种前面的游戏类型
+                const types = ['memory', 'counting', 'pattern'];
+                const randomType = types[Math.floor(Math.random() * types.length)];
+                
+                switch(randomType) {
+                    case 'memory':
+                        this.generateMemoryChallenge(4);
+                        break;
+                    case 'counting':
+                        this.generateCountingChallenge();
+                        break;
+                    case 'pattern':
+                        this.generatePatternChallenge(2);
+                        break;
+                }
+            }
+            
+            generateBossChallenge() {
+                // 终极挑战：结合多种游戏元素
+                this.generateMemoryChallenge(6);
+                this.updateMascotMessage('这是最后的挑战！相信你可以的！💪');
+            }
+            
+            generateCountingOptions() {
+                const correct = this.targetNumber;
+                const options = [correct];
+                
+                // 添加一些干扰选项
+                while (options.length < 4) {
+                    const option = Math.max(1, correct + Math.floor(Math.random() * 6) - 3);
+                    if (!options.includes(option)) {
+                        options.push(option);
+                    }
+                }
+                
+                return this.shuffleArray(options);
+            }
+            
+            generateSequenceOptions(correct) {
+                const options = [correct];
+                
+                // 添加一些干扰选项
+                while (options.length < 4) {
+                    const option = Math.max(0, correct + Math.floor(Math.random() * 6) - 3);
+                    if (!options.includes(option)) {
+                        options.push(option);
+                    }
+                }
+                
+                return this.shuffleArray(options);
+            }
+            
+            updateMascotMessage(message) {
+                const speech = document.getElementById('mascotSpeech');
+                if (speech) {
+                    speech.textContent = message;
+                    const mascot = document.getElementById('gameMascot');
+                    if (mascot) {
+                        mascot.style.animation = 'bounce 0.6s ease-in-out';
+                        setTimeout(() => {
+                            mascot.style.animation = 'bounce 2s infinite';
+                        }, 600);
+                    }
+                }
+            }
+
+            flipCard(index) {
+                const card = document.querySelector(`[data-index="${index}"]`);
+                if (card.classList.contains('flipped') || card.classList.contains('matched')) {
+                    return;
+                }
+                
+                if (this.flippedCards.length >= 2) {
+                    return;
+                }
+                
+                card.classList.add('flipped');
+                card.textContent = this.memoryCards[index];
+                this.flippedCards.push({ index, number: this.memoryCards[index], element: card });
+                
+                if (this.flippedCards.length === 2) {
+                    setTimeout(() => this.checkMemoryMatch(), 800);
+                }
+            }
+
+            checkMemoryMatch() {
+                const [card1, card2] = this.flippedCards;
+                
+                if (card1.number === card2.number) {
+                    // 匹配成功
+                    card1.element.classList.add('matched');
+                    card2.element.classList.add('matched');
+                    this.matchedPairs++;
+                    this.score += 20;
+                    this.showAchievement('太棒了！找到一对！🎉');
+                    
+                    document.getElementById('matchCount').textContent = this.matchedPairs;
+                    
+                    if (this.matchedPairs === this.targetPairs) {
+                        setTimeout(() => this.challengeComplete(), 1000);
+                    }
+                } else {
+                    // 匹配失败 - 翻牌游戏中的试错是正常学习过程，不扣生命值
+                    card1.element.classList.remove('flipped');
+                    card2.element.classList.remove('flipped');
+                    card1.element.innerHTML = '<i class="fas fa-question"></i>';
+                    card2.element.innerHTML = '<i class="fas fa-question"></i>';
+                    
+                    // 给出鼓励，但不扣生命值
+                    const encouragements = [
+                        '再试试看！🤔',
+                        '不要紧，继续努力！😊',
+                        '记忆需要时间，加油！💪',
+                        '相信你的记忆力！✨'
+                    ];
+                    this.updateMascotMessage(encouragements[Math.floor(Math.random() * encouragements.length)]);
+                    this.showAchievement('再试试看！🤔');
+                }
+                
+                this.flippedCards = [];
+                this.updateDisplay();
+            }
+
+            selectPuzzlePiece(number) {
+                if (number === this.targetNumber) {
+                    const target = document.getElementById('puzzleTarget');
+                    target.innerHTML = number;
+                    target.classList.add('filled');
+                    this.score += 30;
+                    this.showAchievement('完美！找到了正确的数字！🎉');
+                    
+                    // 隐藏已选中的拼图块
+                    const selectedPiece = document.querySelector(`[data-number="${number}"]`);
+                    selectedPiece.style.opacity = '0.3';
+                    selectedPiece.style.pointerEvents = 'none';
+                    
+                    setTimeout(() => this.challengeComplete(), 1500);
+                } else {
+                    this.handleWrongAnswer(true); // 拼图游戏答错扣生命值
+                }
+                this.updateDisplay();
+            }
+
+            selectPattern(selectedNumber) {
+                if (selectedNumber === this.patternAnswer) {
+                    // 更新界面显示正确答案
+                    const emptyItem = document.querySelector('.pattern-item.empty');
+                    emptyItem.textContent = selectedNumber;
+                    emptyItem.classList.remove('empty');
+                    emptyItem.style.background = 'linear-gradient(145deg, #26de81, #20bf6b)';
+                    
+                    this.score += 40;
+                    this.showAchievement('规律发现正确！你真聪明！🎉');
+                    
+                    // 禁用所有选项
+                    document.querySelectorAll('.pattern-option').forEach(option => {
+                        option.style.opacity = '0.3';
+                        option.style.pointerEvents = 'none';
+                    });
+                    
+                    setTimeout(() => this.challengeComplete(), 1500);
+                } else {
+                    this.handleWrongAnswer(true); // 规律游戏答错扣生命值
+                }
+                this.updateDisplay();
+            }
+            
+            handleWrongAnswer(shouldDeductLife = true) {
+                if (shouldDeductLife) {
+                    this.lives--;
+                    this.updateLives();
+                    
+                    if (this.lives <= 0) {
+                        this.updateMascotMessage('别担心，我们重新开始吧！💝');
+                        this.showAchievement('生命值用完了，重新开始本关！');
+                        setTimeout(() => {
+                            this.lives = 3;
+                            this.updateLives();
+                            this.generateChallenge();
+                        }, 2000);
+                        return;
+                    }
+                }
+                
+                const encouragements = this.mascotMessages;
+                this.updateMascotMessage(encouragements[Math.floor(Math.random() * encouragements.length)]);
+                this.showAchievement('再试试看！🤔');
+            }
+            
+            updateLives() {
+                const livesElement = document.getElementById('lives');
+                if (livesElement) {
+                    livesElement.textContent = '❤️'.repeat(this.lives);
+                }
+            }
+            
+            selectCountingAnswer(selectedNumber) {
+                if (selectedNumber === this.targetNumber) {
+                    this.score += 25;
+                    this.updateMascotMessage('数得很准确！真棒！🎉');
+                    this.showAchievement('数数正确！🎉');
+                    
+                    // 禁用所有选项
+                    document.querySelectorAll('.number-option').forEach(option => {
+                        option.style.opacity = '0.3';
+                        option.style.pointerEvents = 'none';
+                    });
+                    
+                    setTimeout(() => this.challengeComplete(), 1500);
+                } else {
+                    this.handleWrongAnswer(true); // 数数游戏答错扣生命值
+                }
+                this.updateDisplay();
+            }
+            
+            selectSequenceAnswer(selectedNumber) {
+                if (selectedNumber === this.patternAnswer) {
+                    // 更新界面显示正确答案
+                    const missingItem = document.querySelector('.sequence-number.missing');
+                    missingItem.textContent = selectedNumber;
+                    missingItem.classList.remove('missing');
+                    missingItem.style.background = 'linear-gradient(145deg, #26de81, #20bf6b)';
+                    missingItem.style.color = 'white';
+                    
+                    this.score += 35;
+                    this.updateMascotMessage('数字序列完成得很好！👏');
+                    this.showAchievement('序列完成正确！🎉');
+                    
+                    // 禁用所有选项
+                    document.querySelectorAll('.number-option').forEach(option => {
+                        option.style.opacity = '0.3';
+                        option.style.pointerEvents = 'none';
+                    });
+                    
+                    setTimeout(() => this.challengeComplete(), 1500);
+                } else {
+                    this.handleWrongAnswer(true); // 序列游戏答错扣生命值
+                }
+                this.updateDisplay();
+            }
+
+            challengeComplete() {
+                this.createFireworks();
+                
+                if (this.currentChallenge < this.maxChallenges) {
+                    this.showAchievement(`第${this.currentChallenge}关完成！准备下一关挑战！⭐`);
+                    document.getElementById('nextBtn').style.display = 'inline-block';
+                } else {
+                    this.gameComplete();
+                }
+            }
+
+            nextChallenge() {
+                this.currentChallenge++;
+                document.getElementById('nextBtn').style.display = 'none';
+                this.generateChallenge();
+                this.updateDisplay();
+            }
+
+            gameComplete() {
+                clearInterval(this.timerInterval);
+                this.showGameCompletion();
+            }
+
+            showGameCompletion() {
+                // 创建游戏完成界面
+                let completionDiv = document.getElementById('gameCompletion');
+                if (!completionDiv) {
+                    completionDiv = document.createElement('div');
+                    completionDiv.id = 'gameCompletion';
+                    completionDiv.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0,0,0,0.8);
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        z-index: 2000;
+                    `;
+                    document.body.appendChild(completionDiv);
+                }
+                
+                const elapsedTime = Math.floor((Date.now() - this.startTime) / 1000);
+                const minutes = Math.floor(elapsedTime / 60);
+                const seconds = elapsedTime % 60;
+                
+                completionDiv.innerHTML = `
+                    <div style="
+                        background: white;
+                        border-radius: 20px;
+                        padding: 30px;
+                        max-width: 600px;
+                        width: 90%;
+                        text-align: center;
+                        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                        max-height: 80vh;
+                        overflow-y: auto;
+                    ">
+                        <h2 style="color: #4a90e2; margin-bottom: 20px;">
+                            🎉 恭喜完成全部12关数字记忆挑战！🎉
+                        </h2>
+                        <div style="font-size: 1.2em; color: #27ae60; margin-bottom: 20px;">
+                            总得分：${this.score} 分<br>
+                            用时：${minutes}分${seconds}秒
+                        </div>
+                        
+                        <div style="text-align: left; margin: 20px 0;">
+                            <h3 style="color: #e74c3c; margin-bottom: 15px;">📚 今天学到的知识：</h3>
+                            
+                            <div style="margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 10px;">
+                                <strong style="color: #3742fa;">🧠 数字记忆力 (1-3关)：</strong><br>
+                                通过从简单到复杂的翻牌游戏，从3对到6对的记忆挑战，全面训练了数字记忆能力和视觉记忆技巧。
+                            </div>
+                            
+                            <div style="margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 10px;">
+                                <strong style="color: #3742fa;">🔢 数数与识别 (4-6关)：</strong><br>
+                                通过拼图、数数、序列排列游戏，学会了快速识别数字、准确计数和按顺序排列数字的能力。
+                            </div>
+                            
+                            <div style="margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 10px;">
+                                <strong style="color: #3742fa;">🔍 规律发现 (7-9关)：</strong><br>
+                                通过不同难度的规律题，从简单递增到复杂数列，培养了观察、分析和逻辑推理能力。
+                            </div>
+                            
+                            <div style="margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 10px;">
+                                <strong style="color: #3742fa;">🎯 综合应用 (10-12关)：</strong><br>
+                                结合前面所有技能的混合挑战和终极Boss关，全面检验和巩固了所有学到的数字技能。
+                            </div>
+                            
+                            <div style="margin-bottom: 15px; padding: 10px; background: #e8f5e8; border-radius: 10px; border-left: 4px solid #27ae60;">
+                                <strong style="color: #27ae60;">🎓 12关全面挑战完成：</strong><br>
+                                恭喜你征服了数字记忆世界的全部12关！从基础记忆到综合应用，你的数字思维能力得到了质的飞跃，已经成为真正的数字记忆大师！
+                            </div>
+                            
+                            <div style="margin-top: 15px; padding: 10px; background: linear-gradient(145deg, #ffd700, #ffed4e); border-radius: 10px; text-align: center;">
+                                <strong style="color: #8b4513; font-size: 1.1em;">🏆 获得成就：数字记忆超级大师！</strong>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 20px;">
+                            <button onclick="this.parentElement.parentElement.parentElement.style.display='none'; game.resetGame();" style="
+                                padding: 12px 24px;
+                                font-size: 1.1em;
+                                background: linear-gradient(145deg, #4834d4, #686de0);
+                                color: white;
+                                border: none;
+                                border-radius: 25px;
+                                cursor: pointer;
+                                margin: 5px;
+                            ">重新挑战12关</button>
+                        </div>
+                    </div>
+                `;
+                
+                completionDiv.style.display = 'flex';
+            }
+
+            createFireworks() {
+                const celebration = document.getElementById('celebration');
+                const fireworks = [
+                    '<i class="fas fa-star" style="color: #ffd700;"></i>',
+                    '<i class="fas fa-sparkles" style="color: #ff69b4;"></i>',
+                    '<i class="fas fa-magic" style="color: #00d2d3;"></i>',
+                    '<i class="fas fa-gem" style="color: #ff9ff3;"></i>',
+                    '<i class="fas fa-crown" style="color: #f39c12;"></i>'
+                ];
+                
+                for (let i = 0; i < 6; i++) {
+                    setTimeout(() => {
+                        const firework = document.createElement('div');
+                        firework.className = 'firework';
+                        firework.innerHTML = fireworks[Math.floor(Math.random() * fireworks.length)];
+                        firework.style.left = Math.random() * 90 + 5 + '%';
+                        celebration.appendChild(firework);
+                        
+                        setTimeout(() => {
+                            if (firework.parentNode) {
+                                firework.parentNode.removeChild(firework);
+                            }
+                        }, 2000);
+                    }, i * 200);
+                }
+            }
+
+            showAchievement(message) {
+                const achievement = document.getElementById('achievement');
+                achievement.textContent = message;
+                achievement.style.display = 'block';
+                
+                setTimeout(() => {
+                    achievement.style.display = 'none';
+                }, 2000);
+            }
+
+            resetGame() {
+                this.currentChallenge = 1;
+                this.score = 0;
+                this.gameStarted = false;
+                clearInterval(this.timerInterval);
+                
+                document.getElementById('startBtn').style.display = 'inline-block';
+                document.getElementById('nextBtn').style.display = 'none';
+                document.getElementById('timer').textContent = '00:00';
+                document.getElementById('gameContent').innerHTML = '<p style="text-align: center; color: #666; font-size: 1.2em;">点击开始挑战按钮开始游戏！</p>';
+                
+                // 隐藏游戏完成界面
+                const completionDiv = document.getElementById('gameCompletion');
+                if (completionDiv) {
+                    completionDiv.style.display = 'none';
+                }
+                
+                this.updateDisplay();
+            }
+
+            updateDisplay() {
+                document.getElementById('currentChallenge').textContent = this.currentChallenge;
+                document.getElementById('score').textContent = this.score;
+                this.updateLives();
+            }
+
+            shuffleArray(array) {
+                const shuffled = [...array];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                return shuffled;
+            }
+        }
+
+        // 全局变量和函数
+        let game;
+
+        function initGame() {
+            game = new NumberMemoryGame();
+        }
+
+        function startGame() {
+            game.startGame();
+        }
+
+        function nextChallenge() {
+            game.nextChallenge();
+        }
+
+        function resetGame() {
+            game.resetGame();
+        }
+
+        function flipCard(index) {
+            game.flipCard(index);
+        }
+
+        function selectPuzzlePiece(number) {
+            game.selectPuzzlePiece(number);
+        }
+
+        function selectPattern(number) {
+            game.selectPattern(number);
+        }
+        
+        function selectCountingAnswer(number) {
+            game.selectCountingAnswer(number);
+        }
+        
+        function selectSequenceAnswer(number) {
+            game.selectSequenceAnswer(number);
+        }
+        
+        function cheerMascot() {
+            const mascot = document.getElementById('gameMascot');
+            const speech = document.getElementById('mascotSpeech');
+            
+            const hints = [
+                '仔细观察，你一定能找到答案！✨',
+                '不要着急，慢慢思考～😊',
+                '相信自己，你很棒！💪',
+                '数字的规律就在眼前，加油！🔍',
+                '每一次尝试都是进步！🌟'
+            ];
+            
+            const randomHint = hints[Math.floor(Math.random() * hints.length)];
+            speech.textContent = randomHint;
+            
+            // 添加点击动画
+            mascot.style.transform = 'scale(1.3) rotate(15deg)';
+            setTimeout(() => {
+                mascot.style.transform = 'scale(1) rotate(0deg)';
+            }, 300);
+        }
+
+        // 页面加载完成后初始化游戏
+        document.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>
