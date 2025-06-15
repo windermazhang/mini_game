@@ -914,9 +914,9 @@
             padding: 15px !important;
         }
 
-        /* 强制移动端竖屏样式 */
+        /* 强制移动端竖屏样式 - 不显示覆盖层 */
         body.mobile-portrait .orientation-overlay {
-            display: flex !important;
+            display: none !important;
         }
 
         /* 超小屏幕紧凑模式 */
@@ -1053,6 +1053,9 @@
             得分: <span id="score">0</span> | 
             正确率: <span id="accuracy">100%</span>
         </div>
+        <div style="font-size: 0.6em; opacity: 0.7; margin-top: 2px;">
+            <span id="orientationStatus">检测中...</span>
+        </div>
     </div>
 
     <!-- 魔法师角色 -->
@@ -1174,9 +1177,7 @@
                 this.createMagicParticles();
                 this.updateDisplay();
                 this.checkImagesAvailability();
-                // 移除横竖屏检测，避免移动端点击问题
-                // this.initOrientationCheck();
-                // this.createDebugInfo();
+                this.initSimpleOrientationCheck(); // 使用简化的横竖屏检测
             }
             
             checkImagesAvailability() {
@@ -1191,6 +1192,55 @@
                     console.log('使用emoji作为魔法师角色 - 图片未找到');
                 };
                 img.src = this.wizardImages.happy;
+            }
+            
+            // 简化的横竖屏检测 - 只调整样式，不显示覆盖层
+            initSimpleOrientationCheck() {
+                this.checkSimpleOrientation();
+                
+                // 监听方向变化
+                window.addEventListener('orientationchange', () => {
+                    setTimeout(() => this.checkSimpleOrientation(), 300);
+                });
+                
+                // 监听窗口大小变化
+                window.addEventListener('resize', () => {
+                    this.checkSimpleOrientation();
+                });
+            }
+            
+            checkSimpleOrientation() {
+                const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                const isSmallScreen = Math.min(window.innerWidth, window.innerHeight) <= 768;
+                const isPortrait = window.innerHeight > window.innerWidth;
+                
+                console.log('方向检测:', {
+                    isMobile,
+                    isSmallScreen,
+                    isPortrait,
+                    windowSize: `${window.innerWidth}x${window.innerHeight}`,
+                    bodyClasses: document.body.className
+                });
+                
+                // 移除之前的类
+                document.body.classList.remove('mobile-landscape', 'mobile-portrait');
+                
+                // 只添加CSS类，不显示覆盖层
+                if (isMobile && isSmallScreen) {
+                    if (isPortrait) {
+                        document.body.classList.add('mobile-portrait');
+                        console.log('切换到移动端竖屏模式');
+                    } else {
+                        document.body.classList.add('mobile-landscape');
+                        console.log('切换到移动端横屏模式');
+                    }
+                }
+                
+                // 显示当前状态
+                const statusElement = document.getElementById('orientationStatus');
+                if (statusElement) {
+                    statusElement.textContent = `${isPortrait ? '竖屏' : '横屏'} (${window.innerWidth}x${window.innerHeight})`;
+                }
             }
             
             // 横屏检测和提示
@@ -1915,6 +1965,11 @@
                 startBtn.addEventListener('click', function(e) {
                     console.log('点击事件触发');
                 });
+            }
+            
+            // 立即执行一次方向检测
+            if (game && game.checkSimpleOrientation) {
+                setTimeout(() => game.checkSimpleOrientation(), 100);
             }
         });
     </script>
