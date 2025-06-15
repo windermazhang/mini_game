@@ -20,11 +20,11 @@
             font-family: 'Comic Sans MS', cursive, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto; /* 允许竖向滚动 */
             padding: 5px;
             -webkit-touch-callout: none; /* 禁用iOS长按菜单 */
             -webkit-user-select: none; /* 禁用文本选择 */
@@ -809,6 +809,9 @@
         /* 强制移动端横屏样式 - 通过JavaScript添加的class */
         body.mobile-landscape {
             padding: 3px 0 !important;
+            height: 100vh !important;
+            overflow: hidden !important;
+            position: relative !important;
         }
 
         body.mobile-landscape .main-title { 
@@ -917,6 +920,68 @@
         /* 强制移动端竖屏样式 - 不显示覆盖层 */
         body.mobile-portrait .orientation-overlay {
             display: none !important;
+        }
+        
+        /* 移动端竖屏优化 */
+        body.mobile-portrait {
+            padding: 3px !important;
+        }
+        
+        body.mobile-portrait .main-title {
+            font-size: 1.4em !important;
+            margin: 3px 0 !important;
+        }
+        
+        body.mobile-portrait .subtitle {
+            font-size: 0.8em !important;
+            margin: 3px 0 !important;
+        }
+        
+        body.mobile-portrait .wizard-character {
+            width: 60px !important;
+            height: 60px !important;
+            font-size: 2em !important;
+        }
+        
+        body.mobile-portrait .wizard-speech {
+            font-size: 0.75em !important;
+            max-width: 250px !important;
+            padding: 6px 10px !important;
+        }
+        
+        body.mobile-portrait .factory-area {
+            margin: 5px 0 !important;
+            padding: 8px !important;
+        }
+        
+        body.mobile-portrait .level-title {
+            font-size: 1em !important;
+            margin: 5px 0 !important;
+        }
+        
+        body.mobile-portrait .candy-production {
+            margin: 8px 0 !important;
+        }
+        
+        body.mobile-portrait .answer-option {
+            width: 50px !important;
+            height: 50px !important;
+            font-size: 1.3em !important;
+        }
+        
+        body.mobile-portrait .control-button {
+            padding: 8px 15px !important;
+            font-size: 0.9em !important;
+            min-height: 40px !important;
+        }
+        
+        body.mobile-portrait .score-board {
+            padding: 6px 10px !important;
+            margin: 3px !important;
+        }
+        
+        body.mobile-portrait .score {
+            font-size: 0.8em !important;
         }
 
         /* 超小屏幕紧凑模式 */
@@ -1055,6 +1120,10 @@
         </div>
         <div style="font-size: 0.6em; opacity: 0.7; margin-top: 2px;">
             <span id="orientationStatus">检测中...</span>
+            <button onclick="game && game.checkSimpleOrientation && game.checkSimpleOrientation()" 
+                    style="margin-left: 5px; padding: 1px 4px; font-size: 0.6em; border: none; border-radius: 3px; background: #4ecdc4; color: white; cursor: pointer;">
+                🔄
+            </button>
         </div>
     </div>
 
@@ -1200,18 +1269,25 @@
                 
                 // 监听方向变化
                 window.addEventListener('orientationchange', () => {
-                    setTimeout(() => this.checkSimpleOrientation(), 300);
+                    setTimeout(() => this.checkSimpleOrientation(), 500);
                 });
                 
                 // 监听窗口大小变化
                 window.addEventListener('resize', () => {
-                    this.checkSimpleOrientation();
+                    setTimeout(() => this.checkSimpleOrientation(), 100);
                 });
+                
+                // 定期检查（防止某些设备事件不触发）
+                setInterval(() => {
+                    this.checkSimpleOrientation();
+                }, 2000);
             }
             
             checkSimpleOrientation() {
-                const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                const isSmallScreen = Math.min(window.innerWidth, window.innerHeight) <= 768;
+                const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                                 ('ontouchstart' in window) || 
+                                 (navigator.maxTouchPoints > 0);
+                const isSmallScreen = Math.max(window.innerWidth, window.innerHeight) <= 1024;
                 const isPortrait = window.innerHeight > window.innerWidth;
                 
                 console.log('方向检测:', {
@@ -1219,7 +1295,9 @@
                     isSmallScreen,
                     isPortrait,
                     windowSize: `${window.innerWidth}x${window.innerHeight}`,
-                    bodyClasses: document.body.className
+                    bodyClasses: document.body.className,
+                    touchSupport: 'ontouchstart' in window,
+                    maxTouchPoints: navigator.maxTouchPoints
                 });
                 
                 // 移除之前的类
@@ -1229,17 +1307,21 @@
                 if (isMobile && isSmallScreen) {
                     if (isPortrait) {
                         document.body.classList.add('mobile-portrait');
-                        console.log('切换到移动端竖屏模式');
+                        console.log('✅ 切换到移动端竖屏模式');
                     } else {
                         document.body.classList.add('mobile-landscape');
-                        console.log('切换到移动端横屏模式');
+                        console.log('✅ 切换到移动端横屏模式');
                     }
+                } else {
+                    console.log('💻 桌面模式');
                 }
                 
                 // 显示当前状态
                 const statusElement = document.getElementById('orientationStatus');
                 if (statusElement) {
-                    statusElement.textContent = `${isPortrait ? '竖屏' : '横屏'} (${window.innerWidth}x${window.innerHeight})`;
+                    const mode = isMobile && isSmallScreen ? 
+                        (isPortrait ? '移动竖屏' : '移动横屏') : '桌面';
+                    statusElement.textContent = `${mode} (${window.innerWidth}x${window.innerHeight})`;
                 }
             }
             
