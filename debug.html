@@ -1,0 +1,48 @@
+---
+layout: default
+title: Jekyll调试页面
+---
+
+<div style="padding: 20px; background: white; border-radius: 15px; margin: 20px;">
+    <h2>🔍 Jekyll调试信息</h2>
+    
+    <h3>基本信息：</h3>
+    <ul>
+        <li>当前时间: {{ site.time }}</li>
+        <li>网站标题: {{ site.title }}</li>
+        <li>网站描述: {{ site.description }}</li>
+        <li>Base URL: {{ site.baseurl }}</li>
+        <li>URL: {{ site.url }}</li>
+    </ul>
+    
+    <h3>游戏链接测试：</h3>
+    <ul>
+        <li><a href="{{ '/games/game1/' | relative_url }}" target="_blank">游戏1链接测试</a></li>
+        <li><a href="{{ '/games/game2/' | relative_url }}" target="_blank">游戏2链接测试</a></li>
+        <li><a href="{{ '/games/game3/' | relative_url }}" target="_blank">游戏3链接测试</a></li>
+        <li><a href="{{ '/games/game4/' | relative_url }}" target="_blank">游戏4链接测试</a></li>
+    </ul>
+    
+    <h3>目录结构：</h3>
+    <p>如果游戏无法打开，请检查：</p>
+    <ul>
+        <li>CDN资源是否被阻止</li>
+        <li>浏览器控制台是否有错误</li>
+        <li>网络是否正常</li>
+        <li>文件路径是否正确</li>
+    </ul>
+    
+    <h3>解决方案：</h3>
+    <ol>
+        <li>刷新页面重试</li>
+        <li>清除浏览器缓存</li>
+        <li>检查网络连接</li>
+        <li>查看浏览器开发工具的错误信息</li>
+    </ol>
+</div>
+
+<script>
+console.log('Jekyll调试页面加载完成');
+console.log('当前URL:', window.location.href);
+console.log('基础路径:', '{{ site.baseurl }}');
+</script> 
