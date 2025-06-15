@@ -2,27 +2,13 @@ theme: jekyll-theme-minimal
 title: 珩妈的数学启蒙乐园
 description: 在游戏中探索数学的奇妙世界！
 
-# 基础设置
-baseurl: ""
-url: "https://zhangerma.github.io"
-
-# 启用插件
-plugins:
-  - jekyll-relative-links
+# 基础设置 - 针对 windermazhang.github.io 仓库
+baseurl: "/mini_game"  # 因为游戏文件在 mini_game 子目录中
+url: "https://windermazhang.github.io"
 
 # 处理游戏文件
 include:
   - games
-  - "*.html"
-
-# 保持文件扩展名
-keep_files:
-  - games
-
-# 启用相对链接
-relative_links:
-  enabled: true
-  collections: false
 
 # 排除不需要的文件
 exclude:
@@ -31,23 +17,9 @@ exclude:
   - .git
   - "游戏开发计划.md"
 
-# 安全设置
-safe: true
-
 # 游戏特定设置
 defaults:
   - scope:
       path: "games"
     values:
       layout: none
-  - scope:
-      path: "games/**/*.html"
-    values:
-      layout: none
-      
-# Markdown设置
-markdown: kramdown
-highlighter: rouge
-
-# 文件处理
-permalink: pretty
