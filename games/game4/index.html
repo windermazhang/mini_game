@@ -1120,10 +1120,14 @@
         </div>
         <div style="font-size: 0.6em; opacity: 0.7; margin-top: 2px;">
             <span id="orientationStatus">检测中...</span>
-            <button onclick="game && game.checkSimpleOrientation && game.checkSimpleOrientation()" 
-                    style="margin-left: 5px; padding: 1px 4px; font-size: 0.6em; border: none; border-radius: 3px; background: #4ecdc4; color: white; cursor: pointer;">
-                🔄
-            </button>
+                    <button onclick="forceOrientationCheck()" 
+                style="margin-left: 5px; padding: 1px 4px; font-size: 0.6em; border: none; border-radius: 3px; background: #4ecdc4; color: white; cursor: pointer;">
+            🔄
+        </button>
+        <button onclick="testLandscape()" 
+                style="margin-left: 2px; padding: 1px 4px; font-size: 0.6em; border: none; border-radius: 3px; background: #ff6b6b; color: white; cursor: pointer;">
+            📱
+        </button>
         </div>
     </div>
 
@@ -2028,31 +2032,121 @@
             game.getHint();
         }
         
+        // 全局方向检测函数
+        function forceOrientationCheck() {
+            console.log('🔄 强制执行方向检测');
+            if (game && game.checkSimpleOrientation) {
+                game.checkSimpleOrientation();
+            } else {
+                console.error('❌ 游戏对象或方向检测函数不存在');
+                // 备用检测方法
+                checkOrientationFallback();
+            }
+        }
+        
+        // 备用方向检测方法
+        function checkOrientationFallback() {
+            const isPortrait = window.innerHeight > window.innerWidth;
+            const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            
+            console.log('🔄 备用方向检测:', {
+                isPortrait,
+                isMobile,
+                windowSize: `${window.innerWidth}x${window.innerHeight}`,
+                touchSupport: 'ontouchstart' in window,
+                maxTouchPoints: navigator.maxTouchPoints
+            });
+            
+            // 移除之前的类
+            document.body.classList.remove('mobile-landscape', 'mobile-portrait');
+            
+            if (isMobile) {
+                if (isPortrait) {
+                    document.body.classList.add('mobile-portrait');
+                    console.log('✅ 备用检测：移动端竖屏模式');
+                } else {
+                    document.body.classList.add('mobile-landscape');
+                    console.log('✅ 备用检测：移动端横屏模式');
+                }
+            }
+            
+            // 更新状态显示
+            const statusElement = document.getElementById('orientationStatus');
+            if (statusElement) {
+                const mode = isMobile ? (isPortrait ? '移动竖屏' : '移动横屏') : '桌面';
+                statusElement.textContent = `${mode} (${window.innerWidth}x${window.innerHeight})`;
+            }
+        }
+        
+        // 测试横屏模式
+        function testLandscape() {
+            console.log('🧪 强制测试横屏模式');
+            document.body.classList.remove('mobile-landscape', 'mobile-portrait');
+            document.body.classList.add('mobile-landscape');
+            
+            const statusElement = document.getElementById('orientationStatus');
+            if (statusElement) {
+                statusElement.textContent = `测试横屏 (${window.innerWidth}x${window.innerHeight})`;
+            }
+            
+            console.log('✅ 已强制应用横屏样式');
+            console.log('📋 当前body类:', document.body.className);
+        }
+        
         // 页面加载完成后初始化游戏
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 开始初始化游戏4');
+            
             initGame();
             
             // 移动端调试信息
-            console.log('游戏4加载完成');
-            console.log('用户代理:', navigator.userAgent);
-            console.log('屏幕尺寸:', window.innerWidth + 'x' + window.innerHeight);
-            console.log('是否移动端:', /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+            console.log('✅ 游戏4加载完成');
+            console.log('📱 用户代理:', navigator.userAgent);
+            console.log('📏 屏幕尺寸:', window.innerWidth + 'x' + window.innerHeight);
+            console.log('🤚 触摸支持:', 'ontouchstart' in window);
+            console.log('👆 最大触摸点:', navigator.maxTouchPoints);
             
             // 测试点击事件
             const startBtn = document.getElementById('startBtn');
             if (startBtn) {
                 startBtn.addEventListener('touchstart', function(e) {
-                    console.log('触摸开始事件触发');
+                    console.log('👆 触摸开始事件触发');
                 });
                 startBtn.addEventListener('click', function(e) {
-                    console.log('点击事件触发');
+                    console.log('🖱️ 点击事件触发');
                 });
             }
             
-            // 立即执行一次方向检测
-            if (game && game.checkSimpleOrientation) {
-                setTimeout(() => game.checkSimpleOrientation(), 100);
-            }
+            // 多重方向检测尝试
+            setTimeout(() => {
+                console.log('🔄 尝试方向检测 - 方法1');
+                if (game && game.checkSimpleOrientation) {
+                    game.checkSimpleOrientation();
+                } else {
+                    console.log('⚠️ 游戏对象方向检测失败，使用备用方法');
+                    checkOrientationFallback();
+                }
+            }, 100);
+            
+            setTimeout(() => {
+                console.log('🔄 尝试方向检测 - 方法2');
+                forceOrientationCheck();
+            }, 500);
+            
+            // 添加全局事件监听
+            window.addEventListener('orientationchange', function() {
+                console.log('📱 设备方向改变事件触发');
+                setTimeout(() => {
+                    forceOrientationCheck();
+                }, 500);
+            });
+            
+            window.addEventListener('resize', function() {
+                console.log('📏 窗口大小改变事件触发');
+                setTimeout(() => {
+                    forceOrientationCheck();
+                }, 100);
+            });
         });
     </script>
 </body>
