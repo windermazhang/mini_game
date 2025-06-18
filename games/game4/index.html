@@ -1135,6 +1135,10 @@
                 style="margin-left: 2px; padding: 1px 4px; font-size: 0.6em; border: none; border-radius: 3px; background: #ff6b6b; color: white; cursor: pointer;">
             📱
         </button>
+        <button onclick="toggleOrientationDisplay()" 
+                style="margin-left: 2px; padding: 1px 4px; font-size: 0.6em; border: none; border-radius: 3px; background: #ffc107; color: black; cursor: pointer;">
+            🔄
+        </button>
         </div>
     </div>
 
@@ -1298,7 +1302,8 @@
                 const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
                                  ('ontouchstart' in window) || 
                                  (navigator.maxTouchPoints > 0);
-                const isSmallScreen = Math.max(window.innerWidth, window.innerHeight) <= 1024;
+                // 更宽松的移动设备检测条件
+                const isSmallScreen = Math.min(window.innerWidth, window.innerHeight) <= 1024 || isMobile;
                 const isPortrait = window.innerHeight > window.innerWidth;
                 
                 console.log('方向检测:', {
@@ -1435,8 +1440,11 @@
             }
             
             checkOrientation() {
-                const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                const isSmallScreen = Math.min(window.innerWidth, window.innerHeight) <= 768;
+                const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                                 ('ontouchstart' in window) || 
+                                 (navigator.maxTouchPoints > 0);
+                // 更宽松的移动设备检测条件，与checkSimpleOrientation保持一致
+                const isSmallScreen = Math.min(window.innerWidth, window.innerHeight) <= 1024 || isMobile;
                 const isPortrait = window.innerHeight > window.innerWidth;
                 
                 // 获取屏幕方向信息
@@ -2181,6 +2189,35 @@
             console.log('📋 当前body类:', document.body.className);
         }
         
+        // 切换显示模式（竖屏<->横屏）
+        function toggleOrientationDisplay() {
+            const hasLandscape = document.body.classList.contains('mobile-landscape');
+            const hasPortrait = document.body.classList.contains('mobile-portrait');
+            
+            document.body.classList.remove('mobile-landscape', 'mobile-portrait');
+            
+            if (hasLandscape) {
+                document.body.classList.add('mobile-portrait');
+                console.log('🔄 切换到竖屏显示模式');
+            } else {
+                document.body.classList.add('mobile-landscape');
+                console.log('🔄 切换到横屏显示模式');
+            }
+            
+            const statusElement = document.getElementById('orientationStatus');
+            if (statusElement) {
+                const mode = document.body.classList.contains('mobile-landscape') ? '横屏' : '竖屏';
+                statusElement.textContent = `手动${mode} (${window.innerWidth}x${window.innerHeight})`;
+            }
+            
+            // 重新初始化触摸事件
+            if (game && game.reinitializeTouchEvents) {
+                game.reinitializeTouchEvents();
+            }
+            
+            console.log('📋 当前body类:', document.body.className);
+        }
+        
         // 页面加载完成后初始化游戏
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 开始初始化游戏4');
@@ -2221,12 +2258,16 @@
                 forceOrientationCheck();
             }, 500);
             
-            // 添加全局事件监听
+            // 添加多重事件监听确保横屏切换能被检测到
             window.addEventListener('orientationchange', function() {
                 console.log('📱 设备方向改变事件触发');
                 setTimeout(() => {
                     forceOrientationCheck();
                 }, 500);
+                // 多次检测确保稳定
+                setTimeout(() => {
+                    forceOrientationCheck();
+                }, 1000);
             });
             
             window.addEventListener('resize', function() {
@@ -2234,7 +2275,33 @@
                 setTimeout(() => {
                     forceOrientationCheck();
                 }, 100);
+                setTimeout(() => {
+                    forceOrientationCheck();
+                }, 300);
             });
+            
+            // 添加screen.orientation API支持
+            if (screen.orientation) {
+                screen.orientation.addEventListener('change', function() {
+                    console.log('🔄 Screen orientation API事件触发');
+                    setTimeout(() => {
+                        forceOrientationCheck();
+                    }, 200);
+                });
+            }
+            
+            // 添加视口变化监听
+            window.addEventListener('load', function() {
+                console.log('📄 页面加载完成，执行方向检测');
+                forceOrientationCheck();
+            });
+            
+            // 每隔几秒检查一次（作为备用）
+            setInterval(function() {
+                if (game && game.checkSimpleOrientation) {
+                    game.checkSimpleOrientation();
+                }
+            }, 3000);
         });
     </script>
 </body>
