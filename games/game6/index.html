@@ -313,6 +313,129 @@
             animation: shake 0.5s ease-in-out;
         }
 
+        /* 🎯 按钮背景图片支持 */
+        .option-btn {
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .option-btn.button-bg {
+            background-image: url('./images/ui/button-bg.png');
+        }
+
+        /* ➕➖ 运算符图标 */
+        .operation-icon {
+            width: 50px;
+            height: 50px;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: inline-block;
+            margin: 0 10px;
+        }
+
+        .operation-icon.plus {
+            background-image: url('./images/operations/plus-icon.png');
+        }
+
+        .operation-icon.minus {
+            background-image: url('./images/operations/minus-icon.png');
+        }
+
+        .operation-icon.equals {
+            background-image: url('./images/operations/equals-icon.png');
+        }
+
+        /* 🏆 成就徽章 */
+        .achievement-badge {
+            width: 80px;
+            height: 80px;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: inline-block;
+            margin: 5px;
+        }
+
+        .achievement-badge.rookie {
+            background-image: url('./images/achievements/badge-rookie.png');
+        }
+
+        .achievement-badge.calculator {
+            background-image: url('./images/achievements/badge-calculator.png');
+        }
+
+        .achievement-badge.genius {
+            background-image: url('./images/achievements/badge-genius.png');
+        }
+
+        .achievement-badge.master {
+            background-image: url('./images/achievements/badge-master.png');
+        }
+
+        .achievement-badge.legend {
+            background-image: url('./images/achievements/badge-legend.png');
+        }
+
+        .achievement-badge.ultimate {
+            background-image: url('./images/achievements/badge-ultimate.png');
+        }
+
+        /* ⭐ UI特效元素 */
+        .star-effect {
+            width: 40px;
+            height: 40px;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-image: url('./images/ui/star-effect.png');
+            display: inline-block;
+        }
+
+        .lightning-effect {
+            width: 60px;
+            height: 30px;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-image: url('./images/ui/lightning-effect.png');
+            display: inline-block;
+        }
+
+        /* 🌟 装饰元素 */
+        .number-particles {
+            width: 200px;
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-image: url('./images/decorations/number-particles.png');
+            position: absolute;
+            opacity: 0.3;
+        }
+
+        .formula-trail {
+            width: 300px;
+            height: 100px;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-image: url('./images/decorations/formula-trail.png');
+            position: absolute;
+            opacity: 0.5;
+        }
+
+        .energy-burst {
+            width: 150px;
+            height: 150px;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-image: url('./images/decorations/energy-burst.png');
+            position: absolute;
+        }
+
         @keyframes correctPulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.1); }
