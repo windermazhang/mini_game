@@ -1197,7 +1197,7 @@
                     happy: 'images/wizard-happy.png',
                     thinking: 'images/wizard-thinking.png',
                     celebrating: 'images/wizard-celebrating.png',
-                    encouraging: 'images/wizard-encouraging.png'
+                    encouraging: 'images/wizard-encouraging.jpg'
                 };
                 this.useImages = false; // 是否使用图片，默认使用emoji
                 
@@ -1259,7 +1259,7 @@
                 };
                 img.onerror = () => {
                     this.useImages = false;
-                    console.log('使用emoji作为魔法师角色 - 图片未找到');
+                    console.log('使用emoji作为魔法师角色 - 图片加载失败:', this.wizardImages.happy);
                 };
                 img.src = this.wizardImages.happy;
             }
