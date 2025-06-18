@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
+    <title>游戏6：加减法小能手</title>
+    
+    <!-- 🖼️ 图片预加载 -->
+    <link rel="preload" as="image" href="./images/heroes/math-hero-main.png">
+    <link rel="preload" as="image" href="./images/heroes/hero-victory.png">
+    <link rel="preload" as="image" href="./images/operations/plus-icon.png">
+    <link rel="preload" as="image" href="./images/achievements/badge-rookie.png">
+    <style>
+        /* 基础样式和移动端适配 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+            overflow-x: hidden;
+            position: relative;
+            touch-action: manipulation;
+        }
+
+        /* 防止缩放和滚动 */
+        body, html {
+            overflow-x: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 动态背景装饰 */
+        .background-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .shape {
+            position: absolute;
+            opacity: 0.1;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .shape:nth-child(1) { top: 10%; left: 10%; animation-delay: 0s; }
+        .shape:nth-child(2) { top: 20%; right: 10%; animation-delay: -2s; }
+        .shape:nth-child(3) { bottom: 30%; left: 15%; animation-delay: -4s; }
+        .shape:nth-child(4) { bottom: 10%; right: 20%; animation-delay: -1s; }
+        .shape:nth-child(5) { top: 50%; left: 50%; animation-delay: -3s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        /* 游戏容器 */
+        .game-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            height: calc(100vh - 20px);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        /* 移动端竖屏优化 */
+        @media screen and (orientation: landscape) and (max-height: 500px) {
+            .game-container {
+                height: calc(100vh - 10px);
+                padding: 10px;
+                max-width: 95%;
+            }
+            
+            .header h1 {
+                font-size: 1.3em;
+                margin-bottom: 5px;
+            }
+            
+            .math-hero {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5em;
+            }
+        }
+
+        /* 头部区域 */
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .header h1 {
+            color: #4a154b;
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            font-weight: bold;
+        }
+
+        /* 数学英雄角色 */
+        .math-hero {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
+            animation: heroGlow 2s ease-in-out infinite alternate;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        /* 🖼️ 英雄图片状态管理 */
+        .math-hero.image-loaded {
+            font-size: 0; /* 隐藏emoji文字 */
+        }
+        
+        .math-hero.victory {
+            background-image: url('./images/heroes/hero-victory.png');
+            animation: victoryPulse 1s ease-in-out infinite;
+        }
+        
+        .math-hero.thinking {
+            background-image: url('./images/heroes/hero-thinking.png');
+        }
+        
+        .math-hero:not(.image-loaded) {
+            background-image: none; /* 后备显示emoji */
+        }
+
+        @keyframes victoryPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes heroGlow {
+            0% { box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4); }
+            100% { box-shadow: 0 12px 25px rgba(255, 107, 107, 0.6); }
+        }
+
+        /* 状态栏 */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            padding: 8px 15px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+        }
+
+        .level-info {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .score-info {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .streak-badge {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            min-width: 60px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+        }
+
+        /* 游戏主区域 */
+        .game-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            position: relative;
+        }
+
+        /* 题目显示区 */
+        .problem-display {
+            background: linear-gradient(135deg, #ffd93d, #ffb347);
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 25px rgba(255, 217, 61, 0.4);
+            text-align: center;
+            width: 100%;
+            max-width: 300px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .problem-display::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            50% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+            100% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+        }
+
+        .problem-text {
+            font-size: 2.2em;
+            color: #4a154b;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 5px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .problem-type {
+            font-size: 0.9em;
+            color: #8b4513;
+            font-weight: bold;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 选项按钮区 */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+            max-width: 300px;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            background: linear-gradient(45deg, #a8edea, #fed6e3);
+            border: none;
+            border-radius: 15px;
+            padding: 15px;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #4a154b;
+            cursor: pointer;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: manipulation;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .option-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .option-btn.correct {
+            background: linear-gradient(45deg, #56ab2f, #a8e6cf);
+            animation: correctPulse 0.6s ease-in-out;
+        }
+
+        .option-btn.wrong {
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes correctPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* 进度条 */
+        .progress-container {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            height: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: progressShine 2s infinite;
+        }
+
+        @keyframes progressShine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* 反馈消息 */
+        .feedback-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            opacity: 0;
+            scale: 0.5;
+            transition: all 0.3s ease;
+        }
+
+        .feedback-message.show {
+            opacity: 1;
+            scale: 1;
+        }
+
+        .feedback-message.success {
+            background: linear-gradient(45deg, #56ab2f, #a8e6cf);
+        }
+
+        .feedback-message.error {
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+        }
+
+        /* 特效容器 */
+        .effects-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* 粒子效果 */
+        .particle {
+            position: absolute;
+            background: #ffd93d;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            animation: particleFloat 2s ease-out forwards;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100px) scale(0);
+            }
+        }
+
+        /* 提示按钮 */
+        .hint-btn {
+            background: linear-gradient(45deg, #74b9ff, #0984e3);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            color: white;
+            font-size: 1.2em;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(116, 185, 255, 0.4);
+            transition: all 0.3s ease;
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            touch-action: manipulation;
+        }
+
+        .hint-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(116, 185, 255, 0.6);
+        }
+
+        /* 成就解锁动画 */
+        .achievement-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(45deg, #ffd93d, #ffb347);
+            padding: 25px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+            opacity: 0;
+            scale: 0.5;
+            transition: all 0.5s ease;
+        }
+
+        .achievement-popup.show {
+            opacity: 1;
+            scale: 1;
+        }
+
+        .achievement-popup h3 {
+            color: #4a154b;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .achievement-popup p {
+            color: #8b4513;
+            font-weight: bold;
+        }
+
+        /* 关卡完成庆祝 */
+        .level-complete {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1002;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.5s ease;
+        }
+
+        .level-complete.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .level-complete-content {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 30px;
+            border-radius: 25px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            transform: scale(0.8);
+            transition: transform 0.5s ease;
+        }
+
+        .level-complete.show .level-complete-content {
+            transform: scale(1);
+        }
+
+        .celebration-emoji {
+            font-size: 3em;
+            margin-bottom: 15px;
+            animation: celebrationBounce 1s ease-in-out infinite;
+        }
+
+        @keyframes celebrationBounce {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.2) rotate(10deg); }
+        }
+
+        .next-level-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+            border: none;
+            border-radius: 15px;
+            padding: 12px 25px;
+            color: white;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+            transition: all 0.3s ease;
+            touch-action: manipulation;
+        }
+
+        .next-level-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.6);
+        }
+
+        /* 触摸优化 */
+        .option-btn, .hint-btn, .next-level-btn {
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        /* 触摸反馈 */
+        .option-btn:active, .hint-btn:active, .next-level-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* 屏幕方向提示 */
+        @media screen and (orientation: landscape) and (max-height: 500px) {
+            .orientation-tip {
+                position: fixed;
+                top: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(255, 107, 107, 0.9);
+                color: white;
+                padding: 5px 15px;
+                border-radius: 15px;
+                font-size: 0.8em;
+                z-index: 1003;
+                animation: tipPulse 2s infinite;
+            }
+        }
+
+        @keyframes tipPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        /* 加载动画 */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- 动态背景 -->
+    <div class="background-shapes">
+        <div class="shape">🎯</div>
+        <div class="shape">⭐</div>
+        <div class="shape">🏆</div>
+        <div class="shape">🎮</div>
+        <div class="shape">🌟</div>
+    </div>
+
+    <!-- 屏幕方向提示 -->
+    <div class="orientation-tip" id="orientationTip" style="display: none;">
+        建议竖屏使用以获得最佳体验 📱
+    </div>
+
+    <!-- 游戏主容器 -->
+    <div class="game-container">
+        <!-- 头部区域 -->
+        <div class="header">
+            <div class="math-hero" id="mathHero">🦸</div>
+            <h1>加减法小能手</h1>
+        </div>
+
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <div class="level-info">
+                <span>第</span>
+                <span id="currentLevel">1</span>
+                <span>关</span>
+            </div>
+            <div class="score-info">
+                <span>分数: </span>
+                <span id="score">0</span>
+            </div>
+            <div class="streak-badge" id="streakBadge">
+                连对 0
+            </div>
+        </div>
+
+        <!-- 进度条 -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+        </div>
+
+        <!-- 游戏主区域 -->
+        <div class="game-area">
+            <!-- 题目显示 -->
+            <div class="problem-display">
+                <div class="problem-text" id="problemText">准备开始...</div>
+                <div class="problem-type" id="problemType">加减法混合训练</div>
+            </div>
+
+            <!-- 选项按钮 -->
+            <div class="options-grid" id="optionsGrid">
+                <button class="option-btn" onclick="selectAnswer(0)">?</button>
+                <button class="option-btn" onclick="selectAnswer(1)">?</button>
+                <button class="option-btn" onclick="selectAnswer(2)">?</button>
+                <button class="option-btn" onclick="selectAnswer(3)">?</button>
+            </div>
+        </div>
+
+        <!-- 提示按钮 -->
+        <button class="hint-btn" id="hintBtn" onclick="showHint()" title="获取提示">💡</button>
+    </div>
+
+    <!-- 反馈消息 -->
+    <div class="feedback-message" id="feedbackMessage"></div>
+
+    <!-- 成就解锁弹窗 -->
+    <div class="achievement-popup" id="achievementPopup">
+        <h3 id="achievementTitle">🏆 成就解锁！</h3>
+        <p id="achievementDesc">连续答对5题！</p>
+    </div>
+
+    <!-- 关卡完成庆祝 -->
+    <div class="level-complete" id="levelComplete">
+        <div class="level-complete-content">
+            <div class="celebration-emoji">🎉</div>
+            <h2>恭喜通关！</h2>
+            <p>你已经成为真正的加减法小能手！</p>
+            <p>正确率: <span id="finalAccuracy">0</span>%</p>
+            <p>连对纪录: <span id="finalStreak">0</span></p>
+            <button class="next-level-btn" onclick="nextLevel()">下一关 →</button>
+        </div>
+    </div>
+
+    <!-- 特效容器 -->
+    <div class="effects-container" id="effectsContainer"></div>
+
+    <script>
+        // 🖼️ 图片加载管理器
+        const ImageManager = {
+            images: {
+                'hero-main': './images/heroes/math-hero-main.png',
+                'hero-victory': './images/heroes/hero-victory.png',
+                'hero-thinking': './images/heroes/hero-thinking.png',
+                'plus-icon': './images/operations/plus-icon.png',
+                'minus-icon': './images/operations/minus-icon.png',
+                'equals-icon': './images/operations/equals-icon.png',
+                'badge-rookie': './images/achievements/badge-rookie.png',
+                'badge-calculator': './images/achievements/badge-calculator.png',
+                'badge-genius': './images/achievements/badge-genius.png',
+                'badge-master': './images/achievements/badge-master.png',
+                'badge-legend': './images/achievements/badge-legend.png',
+                'badge-ultimate': './images/achievements/badge-ultimate.png'
+            },
+            loadedImages: new Set(),
+            
+            preloadImages() {
+                Object.entries(this.images).forEach(([key, src]) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        this.loadedImages.add(key);
+                        this.updateImageDisplay(key);
+                    };
+                    img.onerror = () => {
+                        console.log(`图片加载失败，使用emoji后备: ${src}`);
+                    };
+                    img.src = src;
+                });
+            },
+            
+            updateImageDisplay(imageKey) {
+                switch(imageKey) {
+                    case 'hero-main':
+                        const mathHero = document.querySelector('.math-hero');
+                        if (mathHero) {
+                            mathHero.style.backgroundImage = `url('${this.images[imageKey]}')`;
+                            mathHero.classList.add('image-loaded');
+                        }
+                        break;
+                }
+            },
+            
+            setHeroState(state) {
+                const mathHero = document.querySelector('.math-hero');
+                if (!mathHero) return;
+                
+                mathHero.classList.remove('victory', 'thinking');
+                
+                if (state === 'victory' && this.loadedImages.has('hero-victory')) {
+                    mathHero.classList.add('victory', 'image-loaded');
+                } else if (state === 'thinking' && this.loadedImages.has('hero-thinking')) {
+                    mathHero.classList.add('thinking', 'image-loaded');
+                } else if (this.loadedImages.has('hero-main')) {
+                    mathHero.style.backgroundImage = `url('${this.images['hero-main']}')`;
+                    mathHero.classList.add('image-loaded');
+                }
+            }
+        };
+
+        class MathHeroGame {
+            constructor() {
+                this.currentLevel = 1;
+                this.score = 0;
+                this.streak = 0;
+                this.maxStreak = 0;
+                this.totalQuestions = 0;
+                this.correctAnswers = 0;
+                this.currentProblem = null;
+                this.currentAnswer = null;
+                this.options = [];
+                this.gameStartTime = Date.now();
+                this.problemStartTime = Date.now();
+                this.hintsUsed = 0;
+                this.isAnswering = false;
+                
+                // 关卡配置
+                this.levels = [
+                    { name: "启蒙学徒", problems: 8, operations: ['add'], range: [0, 5], description: "简单加法练习" },
+                    { name: "运算新手", problems: 10, operations: ['subtract'], range: [0, 5], description: "基础减法训练" },
+                    { name: "混合挑战", problems: 10, operations: ['add', 'subtract'], range: [0, 6], description: "加减法混合" },
+                    { name: "进阶训练", problems: 12, operations: ['add', 'subtract'], range: [0, 8], description: "中级运算练习" },
+                    { name: "高手之路", problems: 12, operations: ['add', 'subtract'], range: [0, 10], description: "高级混合运算" },
+                    { name: "数学达人", problems: 15, operations: ['add', 'subtract'], range: [0, 10], description: "全面运算挑战" },
+                    { name: "计算大师", problems: 15, operations: ['add', 'subtract'], range: [0, 10], description: "速度与准确度" },
+                    { name: "运算专家", problems: 18, operations: ['add', 'subtract'], range: [0, 10], description: "专家级挑战" },
+                    { name: "数学英雄", problems: 20, operations: ['add', 'subtract'], range: [0, 10], description: "英雄级运算" },
+                    { name: "终极大师", problems: 25, operations: ['add', 'subtract'], range: [0, 10], description: "终极挑战" }
+                ];
+                
+                this.achievements = [
+                    { id: 'first_correct', name: '初战告捷', desc: '答对第一题', unlocked: false },
+                    { id: 'streak_5', name: '连胜达人', desc: '连续答对5题', unlocked: false },
+                    { id: 'streak_10', name: '连胜专家', desc: '连续答对10题', unlocked: false },
+                    { id: 'speed_demon', name: '闪电侠', desc: '3秒内答对题目', unlocked: false },
+                    { id: 'no_hints', name: '独立思考', desc: '不使用提示完成关卡', unlocked: false },
+                    { id: 'perfect_round', name: '完美无缺', desc: '100%正确率完成关卡', unlocked: false }
+                ];
+
+                this.initGame();
+                this.checkOrientation();
+                this.bindEvents();
+            }
+
+            bindEvents() {
+                // 监听屏幕方向变化
+                window.addEventListener('orientationchange', () => {
+                    setTimeout(() => this.checkOrientation(), 500);
+                });
+                
+                window.addEventListener('resize', () => {
+                    this.checkOrientation();
+                });
+
+                // 防止页面滚动和缩放
+                document.addEventListener('touchstart', (e) => {
+                    if (e.touches.length > 1) {
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+
+                document.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                }, { passive: false });
+
+                // 键盘支持
+                document.addEventListener('keydown', (e) => {
+                    if (this.isAnswering) return;
+                    
+                    const key = e.key;
+                    if (key >= '1' && key <= '4') {
+                        const optionIndex = parseInt(key) - 1;
+                        if (optionIndex < this.options.length) {
+                            this.selectAnswer(optionIndex);
+                        }
+                    } else if (key === 'h' || key === 'H') {
+                        this.showHint();
+                    }
+                });
+            }
+
+            checkOrientation() {
+                const orientationTip = document.getElementById('orientationTip');
+                if (window.innerHeight < 500 && window.innerWidth > window.innerHeight) {
+                    orientationTip.style.display = 'block';
+                } else {
+                    orientationTip.style.display = 'none';
+                }
+            }
+
+            initGame() {
+                this.updateDisplay();
+                this.generateNewProblem();
+                this.updateMascotMessage("欢迎来到加减法小能手训练营！让我们开始数学冒险吧！ 🎯");
+            }
+
+            generateNewProblem() {
+                if (this.isAnswering) return;
+                
+                const levelConfig = this.levels[this.currentLevel - 1];
+                const operation = levelConfig.operations[Math.floor(Math.random() * levelConfig.operations.length)];
+                const [minNum, maxNum] = levelConfig.range;
+                
+                let a, b, result;
+                
+                if (operation === 'add') {
+                    // 生成加法题目，确保结果不超过10
+                    a = Math.floor(Math.random() * (maxNum - minNum + 1)) + minNum;
+                    const maxB = Math.min(maxNum, 10 - a);
+                    b = Math.floor(Math.random() * (maxB + 1));
+                    result = a + b;
+                    this.currentProblem = { text: `${a} + ${b} = ?`, operation: 'add', a, b };
+                } else {
+                    // 生成减法题目，确保结果不为负数
+                    a = Math.floor(Math.random() * (maxNum - minNum + 1)) + minNum;
+                    b = Math.floor(Math.random() * (a + 1)); // b不能大于a
+                    result = a - b;
+                    this.currentProblem = { text: `${a} - ${b} = ?`, operation: 'subtract', a, b };
+                }
+                
+                this.currentAnswer = result;
+                this.generateOptions();
+                this.displayProblem();
+                this.problemStartTime = Date.now();
+            }
+
+            generateOptions() {
+                this.options = [this.currentAnswer];
+                
+                // 生成3个错误选项
+                while (this.options.length < 4) {
+                    let wrongAnswer = this.currentAnswer + Math.floor(Math.random() * 8) - 4;
+                    wrongAnswer = Math.max(0, Math.min(10, wrongAnswer)); // 限制在0-10范围内
+                    
+                    if (!this.options.includes(wrongAnswer)) {
+                        this.options.push(wrongAnswer);
+                    }
+                }
+                
+                // 打乱选项顺序
+                this.options = this.shuffleArray(this.options);
+            }
+
+            shuffleArray(array) {
+                const newArray = [...array];
+                for (let i = newArray.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+                }
+                return newArray;
+            }
+
+            displayProblem() {
+                const problemText = document.getElementById('problemText');
+                const problemType = document.getElementById('problemType');
+                const levelConfig = this.levels[this.currentLevel - 1];
+                
+                problemText.textContent = this.currentProblem.text;
+                problemType.textContent = levelConfig.description;
+                
+                // 更新选项按钮
+                const optionBtns = document.querySelectorAll('.option-btn');
+                optionBtns.forEach((btn, index) => {
+                    btn.textContent = this.options[index];
+                    btn.className = 'option-btn';
+                    btn.disabled = false;
+                });
+            }
+
+            selectAnswer(optionIndex) {
+                if (this.isAnswering) return;
+                
+                this.isAnswering = true;
+                const selectedAnswer = this.options[optionIndex];
+                const isCorrect = selectedAnswer === this.currentAnswer;
+                const answerTime = Date.now() - this.problemStartTime;
+                
+                this.totalQuestions++;
+                
+                // 更新按钮状态
+                const optionBtns = document.querySelectorAll('.option-btn');
+                optionBtns.forEach((btn, index) => {
+                    btn.disabled = true;
+                    if (index === optionIndex) {
+                        btn.className = `option-btn ${isCorrect ? 'correct' : 'wrong'}`;
+                    }
+                    if (this.options[index] === this.currentAnswer && !isCorrect) {
+                        btn.className = 'option-btn correct';
+                    }
+                });
+
+                if (isCorrect) {
+                    this.handleCorrectAnswer(answerTime);
+                } else {
+                    this.handleWrongAnswer();
+                }
+
+                // 延迟生成下一题
+                setTimeout(() => {
+                    this.isAnswering = false;
+                    if (this.totalQuestions < this.levels[this.currentLevel - 1].problems) {
+                        this.generateNewProblem();
+                    } else {
+                        this.completeLevel();
+                    }
+                }, 1500);
+            }
+
+            handleCorrectAnswer(answerTime) {
+                this.correctAnswers++;
+                this.streak++;
+                this.maxStreak = Math.max(this.maxStreak, this.streak);
+                
+                // 计算分数（基础分10分，连击奖励，速度奖励）
+                let points = 10;
+                points += Math.min(this.streak * 2, 20); // 连击奖励，最多20分
+                if (answerTime < 3000) points += 5; // 速度奖励
+                
+                this.score += points;
+                
+                this.showFeedback('太棒了！' + (answerTime < 3000 ? ' 反应神速！' : ''), 'success');
+                this.createParticleEffect();
+                this.updateDisplay();
+                
+                // 🦸 英雄胜利状态
+                ImageManager.setHeroState('victory');
+                
+                // 检查成就
+                this.checkAchievements(answerTime);
+                
+                // 更新英雄表情
+                this.updateMascotMessage(this.getEncouragementMessage());
+            }
+
+            handleWrongAnswer() {
+                this.streak = 0;
+                this.showFeedback('再想想看！正确答案是 ' + this.currentAnswer, 'error');
+                this.updateDisplay();
+                this.updateMascotMessage("没关系，继续努力！每个错误都是学习的机会！ 💪");
+                
+                // 🦸 英雄思考状态
+                ImageManager.setHeroState('thinking');
+            }
+
+            getEncouragementMessage() {
+                const messages = [
+                    "做得很好！继续保持！ 🌟",
+                    "你真是个数学天才！ 🧠",
+                    "太厉害了！ 🎉",
+                    "完美的计算！ ✨",
+                    "你越来越强了！ 💫",
+                    "数学英雄就是你！ 🦸",
+                    "继续这个节奏！ 🔥",
+                    "智慧之光闪闪发亮！ 💎"
+                ];
+                return messages[Math.floor(Math.random() * messages.length)];
+            }
+
+            checkAchievements(answerTime) {
+                // 首次答对
+                if (this.correctAnswers === 1 && !this.achievements.find(a => a.id === 'first_correct').unlocked) {
+                    this.unlockAchievement('first_correct');
+                }
+                
+                // 连胜成就
+                if (this.streak === 5 && !this.achievements.find(a => a.id === 'streak_5').unlocked) {
+                    this.unlockAchievement('streak_5');
+                }
+                
+                if (this.streak === 10 && !this.achievements.find(a => a.id === 'streak_10').unlocked) {
+                    this.unlockAchievement('streak_10');
+                }
+                
+                // 速度成就
+                if (answerTime < 3000 && !this.achievements.find(a => a.id === 'speed_demon').unlocked) {
+                    this.unlockAchievement('speed_demon');
+                }
+            }
+
+            unlockAchievement(achievementId) {
+                const achievement = this.achievements.find(a => a.id === achievementId);
+                if (achievement && !achievement.unlocked) {
+                    achievement.unlocked = true;
+                    this.showAchievement(achievement);
+                }
+            }
+
+            showAchievement(achievement) {
+                const popup = document.getElementById('achievementPopup');
+                const title = document.getElementById('achievementTitle');
+                const desc = document.getElementById('achievementDesc');
+                
+                title.textContent = `🏆 ${achievement.name}`;
+                desc.textContent = achievement.desc;
+                
+                popup.classList.add('show');
+                
+                setTimeout(() => {
+                    popup.classList.remove('show');
+                }, 3000);
+            }
+
+            completeLevel() {
+                const accuracy = Math.round((this.correctAnswers / this.totalQuestions) * 100);
+                
+                // 检查关卡相关成就
+                if (this.hintsUsed === 0 && !this.achievements.find(a => a.id === 'no_hints').unlocked) {
+                    this.unlockAchievement('no_hints');
+                }
+                
+                if (accuracy === 100 && !this.achievements.find(a => a.id === 'perfect_round').unlocked) {
+                    this.unlockAchievement('perfect_round');
+                }
+                
+                // 显示关卡完成界面
+                const levelComplete = document.getElementById('levelComplete');
+                const finalAccuracy = document.getElementById('finalAccuracy');
+                const finalStreak = document.getElementById('finalStreak');
+                
+                finalAccuracy.textContent = accuracy;
+                finalStreak.textContent = this.maxStreak;
+                
+                levelComplete.classList.add('show');
+            }
+
+            nextLevel() {
+                // 隐藏完成界面
+                document.getElementById('levelComplete').classList.remove('show');
+                
+                if (this.currentLevel < this.levels.length) {
+                    this.currentLevel++;
+                    this.resetLevelStats();
+                    this.generateNewProblem();
+                    this.updateDisplay();
+                    this.updateMascotMessage(`欢迎来到第${this.currentLevel}关：${this.levels[this.currentLevel - 1].name}！`);
+                } else {
+                    this.showGameComplete();
+                }
+            }
+
+            resetLevelStats() {
+                this.totalQuestions = 0;
+                this.correctAnswers = 0;
+                this.streak = 0;
+                this.hintsUsed = 0;
+            }
+
+            showGameComplete() {
+                // 显示知识点总结
+                this.showKnowledgeSummary();
+                
+                this.showFeedback('🎉 恭喜你！已完成所有关卡！你现在是真正的加减法大师了！', 'success');
+                this.updateMascotMessage("哇！你已经掌握了所有的加减法技巧！真是太厉害了！🏆");
+            }
+
+            showKnowledgeSummary() {
+                const totalAccuracy = Math.round((this.correctAnswers / this.totalQuestions) * 100);
+                const unlockedAchievements = this.achievements.filter(a => a.unlocked).length;
+                
+                const summaryHTML = `
+                    <div class="knowledge-summary-overlay" id="knowledgeSummary">
+                        <div class="knowledge-summary-card">
+                            <div class="summary-header">
+                                <h3>🎓 知识点总结</h3>
+                                <p>恭喜你完成"加减法小能手"训练营！</p>
+                            </div>
+                            
+                            <div class="summary-content">
+                                <div class="knowledge-section">
+                                    <h4>🧮 掌握的数学技能</h4>
+                                    <ul>
+                                        <li><strong>加减法混合运算</strong>：熟练掌握0-10范围内加减法切换</li>
+                                        <li><strong>心算能力</strong>：提升了数学运算的速度和准确性</li>
+                                        <li><strong>运算策略</strong>：学会了多种解题思路和技巧</li>
+                                        <li><strong>数学思维</strong>：培养了逻辑推理和问题解决能力</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="knowledge-section">
+                                    <h4>🎯 学习成果统计</h4>
+                                    <div class="stats-grid">
+                                        <div class="stat-item">
+                                            <span class="stat-label">完成关卡</span>
+                                            <span class="stat-value">${this.currentLevel}/${this.levels.length}</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-label">总得分</span>
+                                            <span class="stat-value">${this.score}</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-label">最高连击</span>
+                                            <span class="stat-value">${this.maxStreak}</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-label">解锁成就</span>
+                                            <span class="stat-value">${unlockedAchievements}/6</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="knowledge-section">
+                                    <h4>🏆 获得的成就</h4>
+                                    <div class="achievements-list">
+                                        ${this.achievements.map(achievement => `
+                                            <div class="achievement-item ${achievement.unlocked ? 'unlocked' : 'locked'}">
+                                                <span class="achievement-icon">${achievement.unlocked ? '🏆' : '🔒'}</span>
+                                                <span class="achievement-name">${achievement.name}</span>
+                                                <span class="achievement-desc">${achievement.desc}</span>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                
+                                <div class="knowledge-section">
+                                    <h4>🌟 下一步学习建议</h4>
+                                    <ul>
+                                        <li>挑战20以内的进位和退位运算</li>
+                                        <li>学习乘法和除法的基础概念</li>
+                                        <li>练习应用题和实际问题解决</li>
+                                        <li>探索更高级的数学游戏和挑战</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-footer">
+                                <button onclick="closeKnowledgeSummary()" class="summary-close-btn">
+                                    ⚡ 继续数学冒险
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.insertAdjacentHTML('beforeend', summaryHTML);
+                
+                // 添加样式（如果还没有的话）
+                if (!document.querySelector('#knowledgeSummaryStyles')) {
+                    const summaryStyles = `
+                        <style id="knowledgeSummaryStyles">
+                        .knowledge-summary-overlay {
+                            position: fixed;
+                            top: 0;
+                            left: 0;
+                            width: 100%;
+                            height: 100%;
+                            background: rgba(0, 0, 0, 0.8);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            z-index: 1000;
+                            animation: fadeIn 0.3s ease;
+                        }
+                        
+                        .knowledge-summary-card {
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            border-radius: 20px;
+                            max-width: 90%;
+                            max-height: 90%;
+                            overflow-y: auto;
+                            color: white;
+                            animation: slideUp 0.5s ease;
+                            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                        }
+                        
+                        .summary-header {
+                            text-align: center;
+                            padding: 20px 20px 10px;
+                            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+                        }
+                        
+                        .summary-header h3 {
+                            margin: 0 0 10px 0;
+                            font-size: 1.5em;
+                            color: #ffd93d;
+                        }
+                        
+                        .summary-content {
+                            padding: 15px 20px;
+                        }
+                        
+                        .knowledge-section {
+                            margin-bottom: 20px;
+                            background: rgba(255, 255, 255, 0.1);
+                            padding: 15px;
+                            border-radius: 10px;
+                        }
+                        
+                        .knowledge-section h4 {
+                            margin: 0 0 10px 0;
+                            color: #ffd93d;
+                            font-size: 1.1em;
+                        }
+                        
+                        .knowledge-section ul {
+                            margin: 10px 0;
+                            padding-left: 20px;
+                        }
+                        
+                        .knowledge-section li {
+                            margin-bottom: 8px;
+                            line-height: 1.4;
+                        }
+                        
+                        .stats-grid {
+                            display: grid;
+                            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+                            gap: 10px;
+                            margin-top: 10px;
+                        }
+                        
+                        .stat-item {
+                            text-align: center;
+                            background: rgba(255, 255, 255, 0.2);
+                            padding: 10px 5px;
+                            border-radius: 8px;
+                        }
+                        
+                        .stat-label {
+                            display: block;
+                            font-size: 0.8em;
+                            margin-bottom: 5px;
+                        }
+                        
+                        .stat-value {
+                            display: block;
+                            font-size: 1.3em;
+                            font-weight: bold;
+                            color: #ffd93d;
+                        }
+                        
+                        .achievements-list {
+                            display: grid;
+                            gap: 8px;
+                            margin-top: 10px;
+                        }
+                        
+                        .achievement-item {
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                            padding: 8px;
+                            background: rgba(255, 255, 255, 0.1);
+                            border-radius: 8px;
+                            transition: all 0.3s ease;
+                        }
+                        
+                        .achievement-item.unlocked {
+                            background: rgba(255, 217, 61, 0.2);
+                            border: 1px solid rgba(255, 217, 61, 0.5);
+                        }
+                        
+                        .achievement-item.locked {
+                            opacity: 0.6;
+                        }
+                        
+                        .achievement-icon {
+                            font-size: 1.2em;
+                            width: 25px;
+                            text-align: center;
+                        }
+                        
+                        .achievement-name {
+                            font-weight: bold;
+                            min-width: 80px;
+                        }
+                        
+                        .achievement-desc {
+                            font-size: 0.9em;
+                            opacity: 0.9;
+                        }
+                        
+                        .summary-footer {
+                            padding: 15px 20px 20px;
+                            text-align: center;
+                        }
+                        
+                        .summary-close-btn {
+                            background: linear-gradient(45deg, #ffd93d, #ffb347);
+                            border: none;
+                            border-radius: 25px;
+                            padding: 12px 30px;
+                            font-size: 1.1em;
+                            font-weight: bold;
+                            color: #4a154b;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            box-shadow: 0 4px 15px rgba(255, 217, 61, 0.4);
+                        }
+                        
+                        .summary-close-btn:hover {
+                            transform: translateY(-2px);
+                            box-shadow: 0 6px 20px rgba(255, 217, 61, 0.6);
+                        }
+                        
+                        @keyframes fadeIn {
+                            from { opacity: 0; }
+                            to { opacity: 1; }
+                        }
+                        
+                        @keyframes slideUp {
+                            from { transform: translateY(50px); opacity: 0; }
+                            to { transform: translateY(0); opacity: 1; }
+                        }
+                        
+                        @keyframes fadeOut {
+                            from { opacity: 1; }
+                            to { opacity: 0; }
+                        }
+                        
+                        @media (max-width: 500px) {
+                            .knowledge-summary-card {
+                                max-width: 95%;
+                                max-height: 85%;
+                            }
+                            
+                            .summary-header {
+                                padding: 15px 15px 10px;
+                            }
+                            
+                            .summary-content {
+                                padding: 10px 15px;
+                            }
+                            
+                            .knowledge-section {
+                                padding: 10px;
+                                font-size: 0.9em;
+                            }
+                            
+                            .stats-grid {
+                                grid-template-columns: repeat(2, 1fr);
+                            }
+                            
+                            .achievement-item {
+                                flex-direction: column;
+                                text-align: center;
+                                gap: 5px;
+                            }
+                            
+                            .achievement-name {
+                                min-width: auto;
+                            }
+                        }
+                        </style>
+                    `;
+                    
+                    document.head.insertAdjacentHTML('beforeend', summaryStyles);
+                }
+            }
+
+            showHint() {
+                if (this.isAnswering) return;
+                
+                this.hintsUsed++;
+                const problem = this.currentProblem;
+                let hintText = '';
+                
+                if (problem.operation === 'add') {
+                    hintText = `提示：${problem.a} 加上 ${problem.b}，可以用手指数数哦！`;
+                } else {
+                    hintText = `提示：从 ${problem.a} 中拿走 ${problem.b}，还剩多少呢？`;
+                }
+                
+                this.showFeedback(hintText, '');
+                this.updateMascotMessage("记住提示，慢慢思考，你一定能做对的！ 🤔");
+            }
+
+            createParticleEffect() {
+                const container = document.getElementById('effectsContainer');
+                const colors = ['#ffd93d', '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4'];
+                
+                for (let i = 0; i < 12; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * window.innerWidth + 'px';
+                    particle.style.top = Math.random() * window.innerHeight + 'px';
+                    particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    particle.style.animationDelay = Math.random() * 0.5 + 's';
+                    
+                    container.appendChild(particle);
+                    
+                    setTimeout(() => {
+                        container.removeChild(particle);
+                    }, 2000);
+                }
+            }
+
+            showFeedback(message, type) {
+                const feedback = document.getElementById('feedbackMessage');
+                feedback.textContent = message;
+                feedback.className = `feedback-message ${type}`;
+                feedback.classList.add('show');
+                
+                setTimeout(() => {
+                    feedback.classList.remove('show');
+                }, 2000);
+            }
+
+            updateDisplay() {
+                document.getElementById('currentLevel').textContent = this.currentLevel;
+                document.getElementById('score').textContent = this.score;
+                document.getElementById('streakBadge').textContent = `连对 ${this.streak}`;
+                
+                // 更新进度条
+                const levelConfig = this.levels[this.currentLevel - 1];
+                const progress = (this.totalQuestions / levelConfig.problems) * 100;
+                document.getElementById('progressBar').style.width = progress + '%';
+            }
+
+            updateMascotMessage(message) {
+                const hero = document.getElementById('mathHero');
+                hero.title = message;
+                
+                // 添加动画效果
+                hero.style.animation = 'none';
+                setTimeout(() => {
+                    hero.style.animation = 'heroGlow 2s ease-in-out infinite alternate';
+                }, 10);
+            }
+        }
+
+        // 全局函数
+        function selectAnswer(index) {
+            window.game.selectAnswer(index);
+        }
+
+        function showHint() {
+            window.game.showHint();
+        }
+
+        function nextLevel() {
+            window.game.nextLevel();
+        }
+
+        function closeKnowledgeSummary() {
+            const summary = document.getElementById('knowledgeSummary');
+            if (summary) {
+                summary.style.animation = 'fadeOut 0.3s ease';
+                setTimeout(() => {
+                    summary.remove();
+                }, 300);
+            }
+        }
+
+        // 游戏初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            // 🖼️ 初始化图片管理器
+            ImageManager.preloadImages();
+            
+            window.game = new MathHeroGame();
+        });
+
+        // 防止页面刷新时丢失进度
+        window.addEventListener('beforeunload', (e) => {
+            if (window.game && window.game.totalQuestions > 0) {
+                e.preventDefault();
+                e.returnValue = '确定要离开吗？游戏进度将会丢失。';
+            }
+        });
+    </script>
+</body>
+</html>
