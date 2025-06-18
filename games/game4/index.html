@@ -356,6 +356,8 @@
             gap: 8px;
             margin: 15px 0;
             flex-wrap: wrap;
+            position: relative;
+            z-index: 999; /* 确保答案选项区域在最上层 */
         }
 
         /* 关卡完成卡片 */
@@ -478,6 +480,11 @@
             min-width: 44px; /* 确保移动端触摸目标足够大 */
             min-height: 44px;
             -webkit-tap-highlight-color: transparent; /* 移除点击高亮 */
+            z-index: 1000; /* 确保答案选项在所有层级之上 */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
 
         .answer-option::before {
@@ -1320,6 +1327,9 @@
                     console.log('💻 桌面模式');
                 }
                 
+                // 重新初始化答案选项的触摸事件
+                this.reinitializeTouchEvents();
+                
                 // 显示当前状态
                 const statusElement = document.getElementById('orientationStatus');
                 if (statusElement) {
@@ -1327,6 +1337,77 @@
                         (isPortrait ? '移动竖屏' : '移动横屏') : '桌面';
                     statusElement.textContent = `${mode} (${window.innerWidth}x${window.innerHeight})`;
                 }
+            }
+            
+            // 重新初始化触摸事件的方法
+            reinitializeTouchEvents() {
+                const options = document.querySelectorAll('.answer-option');
+                if (options.length === 0) return;
+                
+                console.log('🔄 重新初始化答案选项触摸事件，共', options.length, '个选项');
+                
+                options.forEach(option => {
+                    // 确保有data-option属性
+                    if (!option.getAttribute('data-option')) {
+                        const optionText = option.textContent.trim();
+                        option.setAttribute('data-option', optionText);
+                    }
+                    
+                    // 添加触摸事件处理（移除旧的再添加新的）
+                    this.addTouchEventsToOption(option);
+                });
+            }
+            
+            // 给单个选项添加触摸事件
+            addTouchEventsToOption(option) {
+                // 移除可能存在的旧事件监听器
+                const newOption = option.cloneNode(true);
+                option.parentNode.replaceChild(newOption, option);
+                
+                // 添加触摸事件处理
+                newOption.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    newOption.style.transform = 'scale(0.95)';
+                    newOption.style.transition = 'transform 0.1s ease';
+                    console.log('👆 触摸开始 - 选项:', newOption.getAttribute('data-option'));
+                }, { passive: false });
+                
+                newOption.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    newOption.style.transform = 'scale(1)';
+                    const optionValue = parseInt(newOption.getAttribute('data-option'));
+                    console.log('👆 触摸结束 - 选项:', optionValue);
+                    
+                    // 确保触摸结束后触发选择
+                    setTimeout(() => {
+                        if (typeof selectAnswer === 'function') {
+                            selectAnswer(optionValue);
+                        } else if (this.selectAnswer) {
+                            this.selectAnswer(optionValue);
+                        }
+                    }, 50);
+                }, { passive: false });
+                
+                newOption.addEventListener('touchcancel', (e) => {
+                    e.preventDefault();
+                    newOption.style.transform = 'scale(1)';
+                    console.log('👆 触摸取消 - 选项:', newOption.getAttribute('data-option'));
+                }, { passive: false });
+                
+                // 保持原有的click事件作为备用
+                newOption.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const optionValue = parseInt(newOption.getAttribute('data-option'));
+                    console.log('🖱️ 点击事件 - 选项:', optionValue);
+                    
+                    setTimeout(() => {
+                        if (typeof selectAnswer === 'function') {
+                            selectAnswer(optionValue);
+                        } else if (this.selectAnswer) {
+                            this.selectAnswer(optionValue);
+                        }
+                    }, 10);
+                });
             }
             
             // 横屏检测和提示
@@ -1668,7 +1749,9 @@
                 const optionsHtml = `
                     <div class="answer-options">
                         ${this.options.map((option, index) => `
-                            <div class="answer-option option-${(index % 4) + 1}" onclick="selectAnswer(${option})">
+                            <div class="answer-option option-${(index % 4) + 1}" 
+                                 onclick="selectAnswer(${option})"
+                                 data-option="${option}">
                                 ${option}
                             </div>
                         `).join('')}
@@ -1676,6 +1759,11 @@
                 `;
                 
                 container.innerHTML += optionsHtml;
+                
+                // 使用统一的触摸事件初始化方法
+                setTimeout(() => {
+                    this.reinitializeTouchEvents();
+                }, 100);
             }
             
             selectAnswer(selectedAnswer) {
