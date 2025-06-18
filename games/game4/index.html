@@ -1125,20 +1125,6 @@
             得分: <span id="score">0</span> | 
             正确率: <span id="accuracy">100%</span>
         </div>
-        <div style="font-size: 0.6em; opacity: 0.7; margin-top: 2px;">
-            <span id="orientationStatus">检测中...</span>
-                    <button onclick="forceOrientationCheck()" 
-                style="margin-left: 5px; padding: 1px 4px; font-size: 0.6em; border: none; border-radius: 3px; background: #4ecdc4; color: white; cursor: pointer;">
-            🔄
-        </button>
-        <button onclick="testLandscape()" 
-                style="margin-left: 2px; padding: 1px 4px; font-size: 0.6em; border: none; border-radius: 3px; background: #ff6b6b; color: white; cursor: pointer;">
-            📱
-        </button>
-        <button onclick="toggleOrientationDisplay()" 
-                style="margin-left: 2px; padding: 1px 4px; font-size: 0.6em; border: none; border-radius: 3px; background: #ffc107; color: black; cursor: pointer;">
-            🔄
-        </button>
         </div>
     </div>
 
@@ -1306,16 +1292,6 @@
                 const isSmallScreen = Math.min(window.innerWidth, window.innerHeight) <= 1024 || isMobile;
                 const isPortrait = window.innerHeight > window.innerWidth;
                 
-                console.log('方向检测:', {
-                    isMobile,
-                    isSmallScreen,
-                    isPortrait,
-                    windowSize: `${window.innerWidth}x${window.innerHeight}`,
-                    bodyClasses: document.body.className,
-                    touchSupport: 'ontouchstart' in window,
-                    maxTouchPoints: navigator.maxTouchPoints
-                });
-                
                 // 移除之前的类
                 document.body.classList.remove('mobile-landscape', 'mobile-portrait');
                 
@@ -1323,33 +1299,19 @@
                 if (isMobile && isSmallScreen) {
                     if (isPortrait) {
                         document.body.classList.add('mobile-portrait');
-                        console.log('✅ 切换到移动端竖屏模式');
                     } else {
                         document.body.classList.add('mobile-landscape');
-                        console.log('✅ 切换到移动端横屏模式');
                     }
-                } else {
-                    console.log('💻 桌面模式');
                 }
                 
                 // 重新初始化答案选项的触摸事件
                 this.reinitializeTouchEvents();
-                
-                // 显示当前状态
-                const statusElement = document.getElementById('orientationStatus');
-                if (statusElement) {
-                    const mode = isMobile && isSmallScreen ? 
-                        (isPortrait ? '移动竖屏' : '移动横屏') : '桌面';
-                    statusElement.textContent = `${mode} (${window.innerWidth}x${window.innerHeight})`;
-                }
             }
             
             // 重新初始化触摸事件的方法
             reinitializeTouchEvents() {
                 const options = document.querySelectorAll('.answer-option');
                 if (options.length === 0) return;
-                
-                console.log('🔄 重新初始化答案选项触摸事件，共', options.length, '个选项');
                 
                 options.forEach(option => {
                     // 确保有data-option属性
@@ -1374,14 +1336,12 @@
                     e.preventDefault();
                     newOption.style.transform = 'scale(0.95)';
                     newOption.style.transition = 'transform 0.1s ease';
-                    console.log('👆 触摸开始 - 选项:', newOption.getAttribute('data-option'));
                 }, { passive: false });
                 
                 newOption.addEventListener('touchend', (e) => {
                     e.preventDefault();
                     newOption.style.transform = 'scale(1)';
                     const optionValue = parseInt(newOption.getAttribute('data-option'));
-                    console.log('👆 触摸结束 - 选项:', optionValue);
                     
                     // 确保触摸结束后触发选择
                     setTimeout(() => {
@@ -1396,14 +1356,12 @@
                 newOption.addEventListener('touchcancel', (e) => {
                     e.preventDefault();
                     newOption.style.transform = 'scale(1)';
-                    console.log('👆 触摸取消 - 选项:', newOption.getAttribute('data-option'));
                 }, { passive: false });
                 
                 // 保持原有的click事件作为备用
                 newOption.addEventListener('click', (e) => {
                     e.preventDefault();
                     const optionValue = parseInt(newOption.getAttribute('data-option'));
-                    console.log('🖱️ 点击事件 - 选项:', optionValue);
                     
                     setTimeout(() => {
                         if (typeof selectAnswer === 'function') {
@@ -1455,14 +1413,7 @@
                     screenOrientation = Math.abs(window.orientation) === 90 ? 'landscape' : 'portrait';
                 }
                 
-                console.log('方向检测:', {
-                    isMobile,
-                    isSmallScreen,
-                    isPortrait,
-                    screenOrientation,
-                    windowSize: `${window.innerWidth}x${window.innerHeight}`,
-                    dismissed: this.orientationDismissed
-                });
+
                 
                 // 只在移动端小屏幕竖屏时显示提示
                 if (isMobile && isSmallScreen && isPortrait && !this.orientationDismissed) {
@@ -1479,8 +1430,7 @@
                     isMobile && isSmallScreen && isPortrait
                 );
                 
-                // 更新调试信息
-                this.updateDebugInfo();
+
             }
             
             showOrientationOverlay() {
@@ -1493,56 +1443,7 @@
                 }
             }
             
-            // 调试工具：显示当前设备和方向信息
-            createDebugInfo() {
-                if (localStorage.getItem('debugMode') === 'true') {
-                    const debugDiv = document.createElement('div');
-                    debugDiv.id = 'debugInfo';
-                    debugDiv.style.cssText = `
-                        position: fixed;
-                        top: 50%;
-                        left: 10px;
-                        transform: translateY(-50%);
-                        background: rgba(0,0,0,0.8);
-                        color: white;
-                        padding: 10px;
-                        border-radius: 5px;
-                        font-size: 12px;
-                        z-index: 9999;
-                        max-width: 200px;
-                        line-height: 1.4;
-                    `;
-                    document.body.appendChild(debugDiv);
-                    this.updateDebugInfo();
-                }
-            }
-            
-            updateDebugInfo() {
-                const debugDiv = document.getElementById('debugInfo');
-                if (debugDiv) {
-                    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                    const isSmallScreen = Math.min(window.innerWidth, window.innerHeight) <= 768;
-                    const isPortrait = window.innerHeight > window.innerWidth;
-                    
-                    let orientation = 'unknown';
-                    if (screen.orientation) {
-                        orientation = screen.orientation.type;
-                    } else if (window.orientation !== undefined) {
-                        orientation = `${window.orientation}°`;
-                    }
-                    
-                    debugDiv.innerHTML = `
-                        <strong>调试信息:</strong><br/>
-                        设备: ${isMobile ? '移动端' : '桌面端'}<br/>
-                        屏幕: ${window.innerWidth}x${window.innerHeight}<br/>
-                        小屏: ${isSmallScreen ? '是' : '否'}<br/>
-                        竖屏: ${isPortrait ? '是' : '否'}<br/>
-                        方向: ${orientation}<br/>
-                        UA: ${navigator.userAgent.substring(0, 30)}...<br/>
-                        Body类: ${document.body.className || '无'}
-                    `;
-                }
-            }
+
             
             hideOrientationOverlay() {
                 if (this.orientationOverlay) {
@@ -2128,180 +2029,41 @@
             game.getHint();
         }
         
-        // 全局方向检测函数
-        function forceOrientationCheck() {
-            console.log('🔄 强制执行方向检测');
-            if (game && game.checkSimpleOrientation) {
-                game.checkSimpleOrientation();
-            } else {
-                console.error('❌ 游戏对象或方向检测函数不存在');
-                // 备用检测方法
-                checkOrientationFallback();
-            }
-        }
-        
-        // 备用方向检测方法
-        function checkOrientationFallback() {
-            const isPortrait = window.innerHeight > window.innerWidth;
-            const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-            
-            console.log('🔄 备用方向检测:', {
-                isPortrait,
-                isMobile,
-                windowSize: `${window.innerWidth}x${window.innerHeight}`,
-                touchSupport: 'ontouchstart' in window,
-                maxTouchPoints: navigator.maxTouchPoints
-            });
-            
-            // 移除之前的类
-            document.body.classList.remove('mobile-landscape', 'mobile-portrait');
-            
-            if (isMobile) {
-                if (isPortrait) {
-                    document.body.classList.add('mobile-portrait');
-                    console.log('✅ 备用检测：移动端竖屏模式');
-                } else {
-                    document.body.classList.add('mobile-landscape');
-                    console.log('✅ 备用检测：移动端横屏模式');
-                }
-            }
-            
-            // 更新状态显示
-            const statusElement = document.getElementById('orientationStatus');
-            if (statusElement) {
-                const mode = isMobile ? (isPortrait ? '移动竖屏' : '移动横屏') : '桌面';
-                statusElement.textContent = `${mode} (${window.innerWidth}x${window.innerHeight})`;
-            }
-        }
-        
-        // 测试横屏模式
-        function testLandscape() {
-            console.log('🧪 强制测试横屏模式');
-            document.body.classList.remove('mobile-landscape', 'mobile-portrait');
-            document.body.classList.add('mobile-landscape');
-            
-            const statusElement = document.getElementById('orientationStatus');
-            if (statusElement) {
-                statusElement.textContent = `测试横屏 (${window.innerWidth}x${window.innerHeight})`;
-            }
-            
-            console.log('✅ 已强制应用横屏样式');
-            console.log('📋 当前body类:', document.body.className);
-        }
-        
-        // 切换显示模式（竖屏<->横屏）
-        function toggleOrientationDisplay() {
-            const hasLandscape = document.body.classList.contains('mobile-landscape');
-            const hasPortrait = document.body.classList.contains('mobile-portrait');
-            
-            document.body.classList.remove('mobile-landscape', 'mobile-portrait');
-            
-            if (hasLandscape) {
-                document.body.classList.add('mobile-portrait');
-                console.log('🔄 切换到竖屏显示模式');
-            } else {
-                document.body.classList.add('mobile-landscape');
-                console.log('🔄 切换到横屏显示模式');
-            }
-            
-            const statusElement = document.getElementById('orientationStatus');
-            if (statusElement) {
-                const mode = document.body.classList.contains('mobile-landscape') ? '横屏' : '竖屏';
-                statusElement.textContent = `手动${mode} (${window.innerWidth}x${window.innerHeight})`;
-            }
-            
-            // 重新初始化触摸事件
-            if (game && game.reinitializeTouchEvents) {
-                game.reinitializeTouchEvents();
-            }
-            
-            console.log('📋 当前body类:', document.body.className);
-        }
+
         
         // 页面加载完成后初始化游戏
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 开始初始化游戏4');
-            
             initGame();
             
-            // 移动端调试信息
-            console.log('✅ 游戏4加载完成');
-            console.log('📱 用户代理:', navigator.userAgent);
-            console.log('📏 屏幕尺寸:', window.innerWidth + 'x' + window.innerHeight);
-            console.log('🤚 触摸支持:', 'ontouchstart' in window);
-            console.log('👆 最大触摸点:', navigator.maxTouchPoints);
+
             
-            // 测试点击事件
-            const startBtn = document.getElementById('startBtn');
-            if (startBtn) {
-                startBtn.addEventListener('touchstart', function(e) {
-                    console.log('👆 触摸开始事件触发');
-                });
-                startBtn.addEventListener('click', function(e) {
-                    console.log('🖱️ 点击事件触发');
-                });
-            }
-            
-            // 多重方向检测尝试
-            setTimeout(() => {
-                console.log('🔄 尝试方向检测 - 方法1');
-                if (game && game.checkSimpleOrientation) {
-                    game.checkSimpleOrientation();
-                } else {
-                    console.log('⚠️ 游戏对象方向检测失败，使用备用方法');
-                    checkOrientationFallback();
-                }
-            }, 100);
-            
-            setTimeout(() => {
-                console.log('🔄 尝试方向检测 - 方法2');
-                forceOrientationCheck();
-            }, 500);
-            
-            // 添加多重事件监听确保横屏切换能被检测到
+            // 添加横屏切换事件监听
             window.addEventListener('orientationchange', function() {
-                console.log('📱 设备方向改变事件触发');
                 setTimeout(() => {
-                    forceOrientationCheck();
+                    if (game && game.checkSimpleOrientation) {
+                        game.checkSimpleOrientation();
+                    }
                 }, 500);
-                // 多次检测确保稳定
-                setTimeout(() => {
-                    forceOrientationCheck();
-                }, 1000);
             });
             
             window.addEventListener('resize', function() {
-                console.log('📏 窗口大小改变事件触发');
                 setTimeout(() => {
-                    forceOrientationCheck();
+                    if (game && game.checkSimpleOrientation) {
+                        game.checkSimpleOrientation();
+                    }
                 }, 100);
-                setTimeout(() => {
-                    forceOrientationCheck();
-                }, 300);
             });
             
             // 添加screen.orientation API支持
             if (screen.orientation) {
                 screen.orientation.addEventListener('change', function() {
-                    console.log('🔄 Screen orientation API事件触发');
                     setTimeout(() => {
-                        forceOrientationCheck();
+                        if (game && game.checkSimpleOrientation) {
+                            game.checkSimpleOrientation();
+                        }
                     }, 200);
                 });
             }
-            
-            // 添加视口变化监听
-            window.addEventListener('load', function() {
-                console.log('📄 页面加载完成，执行方向检测');
-                forceOrientationCheck();
-            });
-            
-            // 每隔几秒检查一次（作为备用）
-            setInterval(function() {
-                if (game && game.checkSimpleOrientation) {
-                    game.checkSimpleOrientation();
-                }
-            }, 3000);
         });
     </script>
 </body>
